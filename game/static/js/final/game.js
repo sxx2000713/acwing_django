@@ -1,0 +1,4 @@
+class SSZZGame {
+    constructor(id) {
+    }
+}
