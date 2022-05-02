@@ -1,9 +1,6 @@
 {% load static %}
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdn.acwing.com/static/jquery-ui-dist/jquery-ui.min.css">
     <script src="https://cdn.acwing.com/static/jquery/js/jquery-3.3.1.min.js"></script>
     <link rel="stylesheet" href="{% static 'css/game.css/' %}">
@@ -12,12 +9,13 @@
 </head>
 
 <body style="margin: 0;">
-    <div id="sszz_game"></div>
+    <div id="sszz_game123"></div>
     <script>
         $(document).ready(function () {
-            let sszz_game = SSZZGame("sszz_game");
+            let sszz_game = new SSZZGame("sszz_game123");
         });
     </script>
+
 </body>
 
 </html>
