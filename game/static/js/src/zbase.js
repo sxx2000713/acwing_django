@@ -1,4 +1,4 @@
-class SSZZGame {
+export class SSZZGame {
     constructor(id) {
         this.id = id;
         this.$sszz_game = $('#' + id);

@@ -3,33 +3,26 @@ class SSZZGamePlayground {
         this.root = root;
         this.$playground = $(`
         <div class="sszz-game-playground">
-            <div class="sszz-game-playground-buttonfield">
-                <div class="sszz-game-playground-buttonfield-item sszz-game-playground-buttonfield-item-return">
-                    返回主界面
-                </div>
-            </div>
         </div>`);
-        this.$return = this.$playground.find('.sszz-game-playground-buttonfield-item-return');
         this.hide();
         this.root.$sszz_game.append(this.$playground);
+        this.width = this.$playground.width();
+        this.height = this.$playground.height();
+        this.game_map = new GameMap(this);
+        this.players = [];
+        this.players.push(new Player(this, this.width / 2, this.height / 2, this.height * 0.05, "white", this.height * 0.15, true));
+        for (let i = 0; i < 5; i++) {
+            this.players.push(new Player(this, this.width / 2, this.height / 2, this.height * 0.05, "lightblue", this.height * 0.15, false));
+        }
+
         this.start();
     }
 
     start() {
-        this.add_listening_events();
     }
 
     update() {
 
-    }
-
-    add_listening_events() {
-        let outer = this;
-        this.$return.click(function () {
-            console.log("click return")
-            outer.hide();
-            outer.root.menu.show();
-        })
     }
 
     show() {

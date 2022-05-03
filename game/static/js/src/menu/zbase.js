@@ -18,6 +18,7 @@ class SSZZGameMenu {
             </div>
         </div>
         `);
+        //this.hide();
         this.root.$sszz_game.append(this.$menu);
         this.$single = this.$menu.find('.sszz-game-menu-buttonfield-item-single');
         this.$multi = this.$menu.find('.sszz-game-menu-buttonfield-item-multiplay');

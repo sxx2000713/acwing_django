@@ -33,31 +33,8 @@
 .sszz-game-playground {
     width: 100%;
     height: 100%;
-    background-size: 100% 100%;
+    /* background-size: 100% 100%; */
     user-select: none;
-    background-image: url("/static/image/playground/background.jpg");
-}
-
-.sszz-game-playground-buttonfield {
-    width: 20vw;
-    height: 30vh;
-    position: relative;
-    top: 10vh;
-    left: 9vw;
-}
-
-.sszz-game-playground-buttonfield-item {
-    color: lightskyblue;
-    height: 9vh;
-    font-size: 4vw;
-    font-style: oblique;
-    font-family: cursive;
-    text-align: center;
-    transition: all 50ms linear;
-    cursor: pointer;
-}
-
-.sszz-game-playground-buttonfield-item:hover {
-    transform: scale(1.25);
-    transition-duration: 100ms;
+    /* background-image: url("/static/image/playground/background.jpg"); */
+    /* opacity: 0.5; */
 }

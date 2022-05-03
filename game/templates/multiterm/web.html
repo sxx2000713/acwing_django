@@ -4,13 +4,13 @@
     <link rel="stylesheet" href="https://cdn.acwing.com/static/jquery-ui-dist/jquery-ui.min.css">
     <script src="https://cdn.acwing.com/static/jquery/js/jquery-3.3.1.min.js"></script>
     <link rel="stylesheet" href="{% static 'css/game.css/' %}">
-    <script src="{% static 'js/final/game.js' %}"></script>
     <title>术士之战</title>
 </head>
 
 <body style="margin: 0;">
     <div id="sszz_game123"></div>
-    <script>
+    <script type="module">
+        import { SSZZGame } from "{% static 'js/final/game.js' %}";
         $(document).ready(function () {
             let sszz_game = new SSZZGame("sszz_game123");
         });
