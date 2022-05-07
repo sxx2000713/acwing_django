@@ -15,14 +15,18 @@ class SSZZGameMenu {
                 <div class="sszz-game-menu-buttonfield-item sszz-game-menu-buttonfield-item-setting">
                     设置
                 </div>
+                <div class="sszz-game-menu-buttonfield-item sszz-game-menu-buttonfield-item-logout">
+                    退出
+                </div>
             </div>
         </div>
         `);
-        //this.hide();
+        this.hide();
         this.root.$sszz_game.append(this.$menu);
         this.$single = this.$menu.find('.sszz-game-menu-buttonfield-item-single');
         this.$multi = this.$menu.find('.sszz-game-menu-buttonfield-item-multiplay');
         this.$setting = this.$menu.find('.sszz-game-menu-buttonfield-item-setting');
+        this.$logout = this.$menu.find('.sszz-game-menu-buttonfield-item-logout');
         this.start();
     }
 
@@ -42,6 +46,10 @@ class SSZZGameMenu {
         this.$setting.click(function () {
             console.log("click setting button");
         });
+        this.$logout.click(function () {
+            outer.root.settings.logout_remote();
+        })
+
     }
 
     show() {
