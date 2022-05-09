@@ -127,6 +127,13 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class GameMap extends SSZZGameObject 
 
     }
 
+    resize() {
+        this.ctx.canvas.width = this.playground.width;
+        this.ctx.canvas.height = this.playground.height;
+        this.ctx.fillStyle = "rgb(0, 0, 0)";
+        this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+    }
+
     update() {
         this.render();
     }
@@ -148,7 +155,7 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class GameMap extends SSZZGameObject 
         this.color = color;
         this.speed = speed;
         this.fraction = 0.9;
-        this.eps = 3;
+        this.eps = 0.01;
         this.move_length = 0.5 * move_length;
     }
 
@@ -170,8 +177,9 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class GameMap extends SSZZGameObject 
     }
 
     render() {
+        let scale = this.playground.scale;
         this.ctx.beginPath();
-        this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+        this.ctx.arc(this.x * scale, this.y * scale, this.radius * scale, 0, Math.PI * 2, false);
         this.ctx.fillStyle = this.color;
         this.ctx.fill();
     }
@@ -189,7 +197,7 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class GameMap extends SSZZGameObject 
         this.color = color;
         this.speed = speed;
         this.is_me = is_me;
-        this.eps = 0.1;
+        this.eps = 0.01;
         this.cur_skill = null;
         this.damagex = 0;
         this.damagey = 0;
@@ -203,28 +211,31 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class GameMap extends SSZZGameObject 
     }
 
     start() {
+        let scale = this.playground.scale;
         if (this.is_me) {
             this.add_listening_events();
         } else {
-            let tx = Math.random() * this.playground.width;
-            let ty = Math.random() * this.playground.height;
+            let tx = Math.random() * this.playground.width / scale;
+            let ty = Math.random() * this.playground.height / scale;
             this.move_to(tx, ty);
         }
     }
 
     add_listening_events() {
         let outer = this;
+        let scale = this.playground.scale;
         this.playground.game_map.$canvas.on("contextmenu", function () {
             return false;
         });
         this.playground.game_map.$canvas.mousedown(function (e) {
+            const rect = outer.ctx.canvas.getBoundingClientRect();
             if (e.which === 3) {
-                outer.move_to(e.clientX, e.clientY);
+                outer.move_to((e.clientX - rect.left) / scale, (e.clientY - rect.top) / scale);
             } else if (e.which === 1) {
                 if (outer.cur_skill === "fireball") {
-                    outer.shoot_fireball(e.clientX, e.clientY);
-                    outer.cur_skill = null;
+                    outer.shoot_fireball((e.clientX - rect.left) / scale, (e.clientY - rect.top) / scale);
                 }
+                outer.cur_skill = null;
             }
         });
 
@@ -238,15 +249,14 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class GameMap extends SSZZGameObject 
 
     shoot_fireball(tx, ty) {
         let x = this.x, y = this.y;
-        let radius = 0.25 * this.radius;
+        let radius = 0.01;
         let angle = Math.atan2(ty - this.y, tx - this.x);
         let vx = Math.cos(angle);
         let vy = Math.sin(angle);
         let color = "orange";
-        let speed = 3 * this.speed;
-        let move_length = 10 * this.radius;
-        let damage = this.radius * 0.1;
-        new Fireball(this.playground, this, x, y, radius, vx, vy, color, speed, move_length, damage);
+        let speed = 0.5;
+        let move_length = 1;
+        new Fireball(this.playground, this, x, y, radius, vx, vy, color, speed, move_length, 0.01);
     }
 
     get_dist(x1, y1, x2, y2) {
@@ -267,7 +277,7 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class GameMap extends SSZZGameObject 
             new Particles(this.playground, x, y, radius, vx, vy, color, speed, move_length);
         }
         this.radius -= damage;
-        if (this.radius < 10) {
+        if (this.radius < this.eps) {
             this.destory();
             return false;
         } else {
@@ -275,8 +285,6 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class GameMap extends SSZZGameObject 
             this.damagey = Math.sin(angle);
             this.damage_speed = damage * 100;
             this.speed *= 1.1;
-
-
         }
     }
 
@@ -287,8 +295,9 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class GameMap extends SSZZGameObject 
         this.vy = Math.sin(angle);
     }
 
-    update() {
+    update_move() {
         this.spent_time += this.deltatime / 1000;
+        let scale = this.playground.scale;
         if (!this.is_me) {
             if (Math.random() < 1 / 300.0 && this.spent_time > 2) {
                 let ran = Math.floor(Math.random() * this.playground.players.length);
@@ -308,8 +317,8 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class GameMap extends SSZZGameObject 
                 this.move_length = 0;
                 this.vx = this.vy = 0;
                 if (!this.is_me) {
-                    let tx = Math.random() * this.playground.width;
-                    let ty = Math.random() * this.playground.height;
+                    let tx = Math.random() * this.playground.width / scale;
+                    let ty = Math.random() * this.playground.height / scale;
                     this.move_to(tx, ty);
                 }
             } else {
@@ -319,6 +328,10 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class GameMap extends SSZZGameObject 
                 this.move_length -= moved;
             }
         }
+    }
+
+    update() {
+        this.update_move();
         this.render();
     }
 
@@ -332,8 +345,9 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class GameMap extends SSZZGameObject 
         //     this.ctx.drawImage(this.img, this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
         //     this.ctx.restore();
         // } else {
+        let scale = this.playground.scale;
         this.ctx.beginPath();
-        this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+        this.ctx.arc(this.x * scale, this.y * scale, this.radius * scale, 0, Math.PI * 2, false);
         this.ctx.fillStyle = this.color;
         this.ctx.fill();
         // }
@@ -361,7 +375,7 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class GameMap extends SSZZGameObject 
         this.color = color;
         this.speed = speed;
         this.move_length = move_length;
-        this.eps = 0.1;
+        this.eps = 0.01;
         this.damage = damage;
     }
 
@@ -408,8 +422,9 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class GameMap extends SSZZGameObject 
     }
 
     render() {
+        let scale = this.playground.scale;
         this.ctx.beginPath();
-        this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+        this.ctx.arc(this.x * scale, this.y * scale, this.radius * scale, 0, Math.PI * 2, false);
         this.ctx.fillStyle = this.color;
         this.ctx.fill();
     }
@@ -421,19 +436,15 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class GameMap extends SSZZGameObject 
         </div>`);
         this.hide();
         this.root.$sszz_game.append(this.$playground);
-        this.width = this.$playground.width();
-        this.height = this.$playground.height();
-        this.game_map = new GameMap(this);
-        this.players = [];
-        this.players.push(new Player(this, this.width / 2, this.height / 2, this.height * 0.05, "white", this.height * 0.15, true));
-        for (let i = 0; i < 5; i++) {
-            this.players.push(new Player(this, this.width / 2, this.height / 2, this.height * 0.05, "lightblue", this.height * 0.15, false));
-        }
 
         this.start();
     }
 
     start() {
+        let outer = this;
+        $(window).resize(function () {
+            outer.resize();
+        });
     }
 
     update() {
@@ -443,9 +454,32 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class GameMap extends SSZZGameObject 
     show() {
         //打开playground
         this.$playground.show();
+
+        this.width = this.$playground.width();
+        this.height = this.$playground.height();
+        this.resize();
+        this.game_map = new GameMap(this);
+        this.players = [];
+        this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, "white", 0.15, true));
+        for (let i = 0; i < 5; i++) {
+            this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, "lightblue", 0.15, false));
+        }
     }
     hide() {
         this.$playground.hide();
+    }
+
+    resize() {
+        this.width = this.$playground.width();
+        this.height = this.$playground.height();
+        let ratio = this.width / this.height;
+        if (ratio < 16 / 9) {
+            this.height = this.width / 16 * 9;
+        } else {
+            this.width = this.height / 9 * 16;
+        }
+        this.scale = this.height;
+        if (this.game_map) this.game_map.resize();
     }
 }class Settings {
     constructor(root) {
