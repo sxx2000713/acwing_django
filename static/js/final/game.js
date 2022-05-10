@@ -72,6 +72,7 @@ class SSZZGameObject {
         this.has_start = false; //是否执行start
         this.deltatime = 0; //当前帧距离上一帧的距离
         this.uid = this.create_uid();
+        console.log(this.uid);
     }
 
     create_uid() {
@@ -80,6 +81,7 @@ class SSZZGameObject {
             let x = parseInt(Math.floor(Math.random() * 10));
             res += x;
         }
+        return res;
     }
 
     start() {//创建一个新对象
@@ -195,7 +197,7 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class GameMap extends SSZZGameObject 
         this.ctx.fill();
     }
 }class Player extends SSZZGameObject {
-    constructor(playground, X, Y, radius, color, speed, character, username, photo) {
+    constructor(playground, X, Y, radius, color, speed, character, username) {
         super();
         this.playground = playground;
         this.ctx = this.playground.game_map.ctx;
@@ -209,7 +211,6 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class GameMap extends SSZZGameObject 
         this.speed = speed;
         this.character = character;
         this.username = username;
-        this.photo = photo;
         this.eps = 0.01;
         this.cur_skill = null;
         this.damagex = 0;
@@ -227,7 +228,7 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class GameMap extends SSZZGameObject 
         let scale = this.playground.scale;
         if (this.character === "me") {
             this.add_listening_events();
-        } else {
+        } else if (this.character === "robot") {
             let tx = Math.random() * this.playground.width / scale;
             let ty = Math.random() * this.playground.height / scale;
             this.move_to(tx, ty);
@@ -441,6 +442,44 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class GameMap extends SSZZGameObject 
         this.ctx.fillStyle = this.color;
         this.ctx.fill();
     }
+}class MultiPlayerSocket {
+    constructor(playground) {
+        this.playground = playground;
+        this.ws = new WebSocket("wss://app2347.acapp.acwing.com.cn/wss/multiplayer/");
+        this.start();
+    }
+
+    start() {
+        this.recive();
+    }
+
+    send_create_player(username) {
+        let outer = this;
+        this.ws.send(JSON.stringify({
+            'event': "create player",
+            'uid': outer.uid,
+            'username': username,
+        }))
+    }
+    recive() {
+        let outer = this;
+        this.ws.onmessage = function (e) {
+            let data = JSON.parse(e.data);
+            let uid = data.uid;
+            console.log(data);
+            if (uid === outer.uid) return false;
+            let event = data.event;
+            if (event === "create player") {
+                outer.recive_create_player(uid, data.username);
+            }
+        }
+    }
+
+    recive_create_player(uid, username) {
+        let player = new Player(this.playground, this.playground.width / 2 / this.playground.scale, 0.5, 0.05, "white", 0.15, "enemy", username);
+        player.uid = uid;
+        this.playground.players.push(player);
+    }
 }class SSZZGamePlayground {
     constructor(root) {
         this.root = root;
@@ -474,7 +513,7 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class GameMap extends SSZZGameObject 
         this.game_map = new GameMap(this);
         this.resize();
         this.players = [];
-        this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, "lightgreen", 0.15, "me", this.root.settings.username, this.root.settings.photo));
+        this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, "lightgreen", 0.15, "me", this.root.settings.username));
         if (mode === "single") {
             for (let i = 0; i < 5; i++) {
                 this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, "lightblue", 0.15, "robot"));
@@ -482,8 +521,8 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class GameMap extends SSZZGameObject 
         } else if (mode === "multiend") {
             this.mps = new MultiPlayerSocket(this);
             this.mps.uid = this.players[0].uid;
-            this.mps.ws.onopen = function () {
-                outer.mps.send_create_player();
+            this.mps.ws.onopen = function () {//链接创建成功回调
+                outer.mps.send_create_player(outer.root.settings.username);
             };
         }
 

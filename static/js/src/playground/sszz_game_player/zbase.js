@@ -1,5 +1,5 @@
 class Player extends SSZZGameObject {
-    constructor(playground, X, Y, radius, color, speed, character, username, photo) {
+    constructor(playground, X, Y, radius, color, speed, character, username) {
         super();
         this.playground = playground;
         this.ctx = this.playground.game_map.ctx;
@@ -13,7 +13,6 @@ class Player extends SSZZGameObject {
         this.speed = speed;
         this.character = character;
         this.username = username;
-        this.photo = photo;
         this.eps = 0.01;
         this.cur_skill = null;
         this.damagex = 0;
@@ -31,7 +30,7 @@ class Player extends SSZZGameObject {
         let scale = this.playground.scale;
         if (this.character === "me") {
             this.add_listening_events();
-        } else {
+        } else if (this.character === "robot") {
             let tx = Math.random() * this.playground.width / scale;
             let ty = Math.random() * this.playground.height / scale;
             this.move_to(tx, ty);

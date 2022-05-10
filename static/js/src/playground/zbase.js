@@ -31,7 +31,7 @@ class SSZZGamePlayground {
         this.game_map = new GameMap(this);
         this.resize();
         this.players = [];
-        this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, "lightgreen", 0.15, "me", this.root.settings.username, this.root.settings.photo));
+        this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, "lightgreen", 0.15, "me", this.root.settings.username));
         if (mode === "single") {
             for (let i = 0; i < 5; i++) {
                 this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, "lightblue", 0.15, "robot"));
@@ -39,8 +39,8 @@ class SSZZGamePlayground {
         } else if (mode === "multiend") {
             this.mps = new MultiPlayerSocket(this);
             this.mps.uid = this.players[0].uid;
-            this.mps.ws.onopen = function () {
-                outer.mps.send_create_player();
+            this.mps.ws.onopen = function () {//链接创建成功回调
+                outer.mps.send_create_player(outer.root.settings.username);
             };
         }
 

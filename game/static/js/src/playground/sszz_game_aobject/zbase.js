@@ -7,6 +7,7 @@ class SSZZGameObject {
         this.has_start = false; //是否执行start
         this.deltatime = 0; //当前帧距离上一帧的距离
         this.uid = this.create_uid();
+        console.log(this.uid);
     }
 
     create_uid() {
@@ -15,6 +16,7 @@ class SSZZGameObject {
             let x = parseInt(Math.floor(Math.random() * 10));
             res += x;
         }
+        return res;
     }
 
     start() {//创建一个新对象

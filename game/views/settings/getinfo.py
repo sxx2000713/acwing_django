@@ -13,5 +13,4 @@ def getinfo(request):
         return JsonResponse({
             'result':"success",
             'username': player.user.username,
-            'photo': player.photo,
         })
