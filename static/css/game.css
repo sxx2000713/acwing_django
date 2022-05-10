@@ -1,0 +1,144 @@
+.sszz-game-menu {
+    width: 100%;
+    height: 100%;
+    background-image: url("/static/image/menu/background.jpg");
+    background-size: 100% 100%;
+    user-select: none;
+}
+
+.sszz-game-menu-buttonfield {
+    width: 20vw;
+    height: 30vh;
+    position: relative;
+    top: 10vh;
+    left: 9vw;
+}
+
+.sszz-game-menu-buttonfield-item {
+    color: wheat;
+    height: 9vh;
+    font-size: 4vw;
+    font-style: oblique;
+    font-family: cursive;
+    text-align: center;
+    transition: all 50ms linear;
+    cursor: pointer;
+}
+
+.sszz-game-menu-buttonfield-item:hover {
+    transform: scale(1.25);
+    transition-duration: 100ms;
+}
+
+.sszz-game-playground {
+    width: 100%;
+    height: 100%;
+    /* background-size: 100% 100%; */
+    user-select: none;
+    background-color: grey;
+    /* background-image: url("/static/image/playground/background.jpg"); */
+    /* opacity: 0.5; */
+}
+
+.sszz-game-playground>canvas {
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.sszz-game-settings {
+    width: 100%;
+    height: 100%;
+    background-image: url("/static/image/menu/background.jpg");
+    background-size: 100% 100%;
+    user-select: none;
+}
+
+.sszz-game-settings-login {
+    height: 41vh;
+    width: 20vw;
+    /* 设置居中 */
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    border-radius: 5px;
+}
+
+.sszz-game-settings-register {
+    height: 49vh;
+    width: 20vw;
+    /* 设置居中 */
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 5px;
+}
+
+.sszz-game-settings-title {
+    color: wheat;
+    font-size: 3vh;
+    text-align: center;
+    height: 7vh;
+    font-family: cursive;
+    padding-top: 2vh;
+    margin-bottom: 2vh;
+}
+
+.sszz-game-settings-username {
+    display: block;
+    height: 7vh;
+}
+
+.sszz-game-settings-password {
+    display: block;
+    height: 7vh;
+}
+
+.sszz-game-settings-submit {
+    display: block;
+    height: 7vh;
+}
+
+.sszz-game-settings-item {
+    width: 100%;
+    height: 100%;
+}
+
+.sszz-game-settings-item>input {
+    width: 90%;
+    line-height: 3vh;
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.sszz-game-settings-item>button {
+    width: 90%;
+    line-height: 3vh;
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: black;
+    font-size: 2vh;
+    font-family: cursive;
+    font-weight: bold;
+    background-color: wheat;
+    border: solid;
+    border-color: white;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+.sszz-game-settings-errormessage {
+    color: lightcoral;
+    font-size: 1vh;
+    display: block;
+    text-align: center;
+}

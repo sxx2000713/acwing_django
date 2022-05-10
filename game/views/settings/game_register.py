@@ -26,7 +26,7 @@ def game_register(request):
     user = User(username=username)
     user.set_password(password)
     user.save()
-    Player.objects.create(user=user, photo="http://49.232.201.217:8000/static/image/settings/avator.jpg")
+    Player.objects.create(user=user, photo="https://app2347.acapp.acwing.com.cn/static/image/settings/avator.jpg")
     login(request, user)
     return JsonResponse({
         'result':"success"
