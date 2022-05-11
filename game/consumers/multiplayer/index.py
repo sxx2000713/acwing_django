@@ -40,19 +40,65 @@ class MultiPlayer(AsyncWebsocketConsumer):
         await self.channel_layer.group_send(
             self.room_name,
             {
-                'type' : "group_create_player",
+                'type' : "group_send_event",
                 'event' : "create player",
                 'uid' : data['uid'],
                 'username' : data['username'],
             }
         )
     
-    async def group_create_player(self, data):
+    async def group_send_event(self, data):
         await self.send(text_data=json.dumps(data))
 
+    async def move_to(self, data):
+        await self.channel_layer.group_send(
+            self.room_name,
+            {
+                'type':"group_send_event",
+                'event':"move",
+                'uid':data['uid'],
+                'tx':data['tx'],
+                'ty':data['ty']
+            }
+        )
+    
+    async def attack(self, data):
+        await self.channel_layer.group_send(
+            self.room_name,
+            {
+                'type':"group_send_event",
+                'event':"attack",
+                'uid' : data['uid'],
+                'tx':data['tx'],
+                'ty': data['ty'],
+                'ball_uid':data['ball_uid']
+            }
+        )
+    
+    async def enemy_attacked(self, data):
+        await self.channel_layer.group_send(
+            self.room_name,
+            {
+                'type':"group_send_event",
+                'event':"enemy_attacked",
+                'uid':data['uid'],
+                'enemy_uid':data['enemy_uid'],
+                'enemy_x' :data['enemy_x'],
+                'enemy_y':data['enemy_y'],
+                'angle':data['angle'],
+                'damage':data['damage'],
+                'ball_uid':data['ball_uid']
+            }
+        )
 
     async def receive(self, text_data):
         data = json.loads(text_data)
         event = data['event']
         if event == "create player":
             await self.create_player(data)
+        elif event == "move":
+            await self.move_to(data)
+        elif event == "attack":
+            await self.attack(data)
+        elif event == "enemy_attacked":
+            await self.enemy_attacked(data)

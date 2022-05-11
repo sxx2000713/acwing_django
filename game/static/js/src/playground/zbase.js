@@ -25,11 +25,15 @@ class SSZZGamePlayground {
         //打开playground
         let outer = this;
         this.$playground.show();
-
+        this.mode = mode;
         this.width = this.$playground.width();
         this.height = this.$playground.height();
         this.game_map = new GameMap(this);
+        this.notice_board = new NoticeBoard(this);
+        this.player_cnt = 0;
         this.resize();
+        this.state = "waiting"; // waiting > fighting > over
+
         this.players = [];
         this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, "lightgreen", 0.15, "me", this.root.settings.username));
         if (mode === "single") {

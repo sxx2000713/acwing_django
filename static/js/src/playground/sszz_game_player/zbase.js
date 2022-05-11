@@ -20,6 +20,7 @@ class Player extends SSZZGameObject {
         this.damage_speed = 0;
         this.fraction = 0.9;
         this.spent_time = 0;
+        this.fireballs = [];
         // if (this.character !== "robot") {
         //     this.img = new Image();
         //     this.img.src = this.photo;
@@ -28,6 +29,12 @@ class Player extends SSZZGameObject {
 
     start() {
         let scale = this.playground.scale;
+        this.playground.player_cnt++;
+        this.playground.notice_board.write("已就绪：" + this.playground.player_cnt + "人");
+        if (this.playground.player_cnt >= 2) {
+            this.playground.state = "fighting";
+            this.playground.notice_board.write("Fighting");
+        }
         if (this.character === "me") {
             this.add_listening_events();
         } else if (this.character === "robot") {
@@ -44,18 +51,30 @@ class Player extends SSZZGameObject {
             return false;
         });
         this.playground.game_map.$canvas.mousedown(function (e) {
+            if (outer.playground.state !== "fighting") return false;
             const rect = outer.ctx.canvas.getBoundingClientRect();
             if (e.which === 3) {
-                outer.move_to((e.clientX - rect.left) / scale, (e.clientY - rect.top) / scale);
+                let tx = (e.clientX - rect.left) / scale;
+                let ty = (e.clientY - rect.top) / scale;
+                outer.move_to(tx, ty);
+                if (outer.playground.mode === "multiend") {
+                    outer.playground.mps.send_move_to(tx, ty);
+                }
             } else if (e.which === 1) {
+                let tx = (e.clientX - rect.left) / scale;
+                let ty = (e.clientY - rect.top) / scale;
                 if (outer.cur_skill === "fireball") {
-                    outer.shoot_fireball((e.clientX - rect.left) / scale, (e.clientY - rect.top) / scale);
+                    let fireball = outer.shoot_fireball(tx, ty);
+                    if (outer.playground.mode === "multiend") {
+                        outer.playground.mps.send_attack(tx, ty, fireball.uid);
+                    }
                 }
                 outer.cur_skill = null;
             }
         });
 
         $(window).keydown(function (e) {
+            if (outer.playground.state !== "fighting") return false;
             if (e.which === 81) {
                 outer.cur_skill = "fireball";
                 return false;
@@ -72,7 +91,19 @@ class Player extends SSZZGameObject {
         let color = "orange";
         let speed = 0.5;
         let move_length = 1;
-        new Fireball(this.playground, this, x, y, radius, vx, vy, color, speed, move_length, 0.01);
+        let fireball = new Fireball(this.playground, this, x, y, radius, vx, vy, color, speed, move_length, 0.01);
+        this.fireballs.push(fireball);
+        return fireball;
+    }
+
+    destory_fireball(ball_uid) {
+        for (let i = 0; i < this.fireballs.length; i++) {
+            let fireball = this.fireballs[i];
+            if (fireball.ball_uid === ball_uid) {
+                fireball.destory();
+                break;
+            }
+        }
     }
 
     get_dist(x1, y1, x2, y2) {
@@ -102,6 +133,13 @@ class Player extends SSZZGameObject {
             this.damage_speed = damage * 100;
             this.speed *= 1.1;
         }
+    }
+
+    recive_group_send_attack(x, y, angle, damage, ball_uid, attacker) {
+        attacker.destory_fireball(ball_uid);
+        this.x = x;
+        this.y = y;
+        this.is_attacked(damage, angle);
     }
 
     move_to(tx, ty) {
@@ -174,6 +212,7 @@ class Player extends SSZZGameObject {
         for (let i = 0; i < this.playground.players.length; i++) {
             if (this.playground.players[i] === this) {
                 this.playground.players.splice(i, 1);
+                break;
             }
         }
     }

@@ -1,0 +1,5 @@
+python3 manage.py shell
+from django.core.cache import cache
+def clear():
+    for key in cache.keys('*'):
+        cache.delete(key)
