@@ -9,8 +9,7 @@ def getinfo(request):
             'result':"fail",
         })
     else:
-        player = Player.objects.all()[0]
         return JsonResponse({
             'result':"success",
-            'username': player.user.username,
+            'username': user.username,
         })
