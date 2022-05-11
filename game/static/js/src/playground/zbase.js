@@ -42,6 +42,7 @@ class SSZZGamePlayground {
             }
         } else if (mode === "multiend") {
             this.mps = new MultiPlayerSocket(this);
+            this.chatfield = new ChatField(this);
             this.mps.uid = this.players[0].uid;
             this.mps.ws.onopen = function () {//链接创建成功回调
                 outer.mps.send_create_player(outer.root.settings.username);

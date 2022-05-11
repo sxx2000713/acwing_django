@@ -33,6 +33,8 @@ class MultiPlayerSocket {
                 outer.recive_attack(uid, data.tx, data.ty, data.ball_uid);
             } else if (event === "enemy_attacked") {
                 outer.recive_enemy_is_attacked(uid, data.enemy_uid, data.enemy_x, data.enemy_y, data.angle, data.damage, data.ball_uid);
+            } else if (event === "send message") {
+                outer.recive_message(uid, data.text);
             }
         }
     }
@@ -108,5 +110,20 @@ class MultiPlayerSocket {
         if (attacker && enemy) {
             enemy.recive_group_send_attack(enemy_x, enemy_y, angle, damage, ball_uid, attacker);
         }
+    }
+
+    send_message(text) {
+        let outer = this;
+        this.ws.send(JSON.stringify({
+            'event': "send message",
+            'text': text,
+            'uid': outer.uid
+        }))
+    }
+
+    recive_message(uid, text) {
+        let player = this.get_player(uid);
+        player.playground.chatfield.add_message(player.username, text);
+        player.playground.chatfield.show_history();
     }
 }

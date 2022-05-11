@@ -73,8 +73,14 @@ class Player extends SSZZGameObject {
             }
         });
 
-        $(window).keydown(function (e) {
-            if (outer.playground.state !== "fighting") return false;
+        this.playground.game_map.$canvas.keydown(function (e) {
+            if (e.which === 13 && outer.playground.mode === "multiend") {
+                outer.playground.chatfield.show_input();
+                return false;
+            } else if (e.which === 27 && outer.playground.mode === "multiend") {
+                outer.playground.chatfield.hide_input();
+            }
+            if (outer.playground.state !== "fighting") return true;
             if (e.which === 81) {
                 outer.cur_skill = "fireball";
                 return false;

@@ -142,3 +142,40 @@
     display: block;
     text-align: center;
 }
+
+.sszz-game-chatfield-history {
+    position: absolute;
+    top: 66%;
+    left: 20%;
+
+    transform: translate(-50%, -50%);
+
+    width: 20%;
+    height: 32%;
+
+    color: white;
+    font-size: 2vh;
+
+    padding: 5px;
+    overflow: auto;
+}
+
+.sszz-game-chatfield-history::-webkit-scrollbar {
+    width: 0;
+}
+
+
+.sszz-game-chatfield-input {
+    position: absolute;
+    top: 86%;
+    left: 20%;
+    transform: translate(-50%, -50%);
+
+    width: 20%;
+    height: 3vh;
+
+    color: white;
+    font-size: 2vh;
+
+    background-color: rgba(222, 225, 230, 0.2);
+}

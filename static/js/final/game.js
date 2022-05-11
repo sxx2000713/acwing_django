@@ -126,18 +126,79 @@ let SSZZ_GAME_ANIMATION = function (timestamp) {
     requestAnimationFrame(SSZZ_GAME_ANIMATION);
 }
 
-requestAnimationFrame(SSZZ_GAME_ANIMATION);class GameMap extends SSZZGameObject {
+requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
+    constructor(playground) {
+        this.playground = playground;
+
+        this.$history = $(`<div class="sszz-game-chatfield-history"></div>`);
+        this.$history.hide();
+        this.$input = $(`<input type="text" class="sszz-game-chatfield-input">`);
+        this.$input.hide();
+        this.playground.$playground.append(this.$history);
+        this.playground.$playground.append(this.$input);
+        this.start();
+    }
+
+    start() {
+        this.listen_events();
+    }
+
+    add_message(username, text) {
+        let message = `[${username}]${text}`;
+        let $add = $(`<div>${message}</div>`);
+        this.$history.append($add);
+        this.$history.scrollTop(this.$history[0].scrollHeight);
+    }
+
+    listen_events() {
+        let outer = this;
+        this.$input.keydown(function (e) {
+            if (e.which === 27) outer.hide_input();
+            else if (e.which === 13) {
+                let username = outer.playground.root.settings.username;
+                let text = outer.$input.val();
+                if (text) {
+                    outer.$input.val("");
+                    outer.add_message(username, text);
+                    outer.playground.mps.send_message(text);
+                }
+                return false;
+            }
+        })
+    }
+
+    show_input() {
+        this.$input.show();
+        this.$input.focus();
+        this.$history.fadeIn();
+    }
+
+    hide_input() {
+        this.$input.hide();
+        this.playground.game_map.$canvas.focus();
+        this.$history.fadeOut();
+    }
+
+    show_history() {
+        let outer = this;
+        this.$history.fadeIn();
+
+        setTimeout(function () {
+            outer.$history.fadeOut();
+        }, 3000);
+    }
+}class GameMap extends SSZZGameObject {
     constructor(playground) {
         super();
         this.playground = playground;
-        this.$canvas = $(`<canvas></canvas>`);
+        this.$canvas = $(`<canvas tabindex=0></canvas>`);//tabindex：使该标签可以监听读入事件（聚焦后才可）
         this.ctx = this.$canvas[0].getContext('2d');
         this.ctx.canvas.width = this.playground.width;
         this.ctx.canvas.height = this.playground.height;
         this.playground.$playground.append(this.$canvas);
     }
     start() {
-
+        this.$canvas.focus();
     }
 
     resize() {
@@ -298,8 +359,14 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class GameMap extends SSZZGameObject 
             }
         });
 
-        $(window).keydown(function (e) {
-            if (outer.playground.state !== "fighting") return false;
+        this.playground.game_map.$canvas.keydown(function (e) {
+            if (e.which === 13 && outer.playground.mode === "multiend") {
+                outer.playground.chatfield.show_input();
+                return false;
+            } else if (e.which === 27 && outer.playground.mode === "multiend") {
+                outer.playground.chatfield.hide_input();
+            }
+            if (outer.playground.state !== "fighting") return true;
             if (e.which === 81) {
                 outer.cur_skill = "fireball";
                 return false;
@@ -566,6 +633,8 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class GameMap extends SSZZGameObject 
                 outer.recive_attack(uid, data.tx, data.ty, data.ball_uid);
             } else if (event === "enemy_attacked") {
                 outer.recive_enemy_is_attacked(uid, data.enemy_uid, data.enemy_x, data.enemy_y, data.angle, data.damage, data.ball_uid);
+            } else if (event === "send message") {
+                outer.recive_message(uid, data.text);
             }
         }
     }
@@ -642,6 +711,21 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class GameMap extends SSZZGameObject 
             enemy.recive_group_send_attack(enemy_x, enemy_y, angle, damage, ball_uid, attacker);
         }
     }
+
+    send_message(text) {
+        let outer = this;
+        this.ws.send(JSON.stringify({
+            'event': "send message",
+            'text': text,
+            'uid': outer.uid
+        }))
+    }
+
+    recive_message(uid, text) {
+        let player = this.get_player(uid);
+        player.playground.chatfield.add_message(player.username, text);
+        player.playground.chatfield.show_history();
+    }
 }class SSZZGamePlayground {
     constructor(root) {
         this.root = root;
@@ -686,6 +770,7 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class GameMap extends SSZZGameObject 
             }
         } else if (mode === "multiend") {
             this.mps = new MultiPlayerSocket(this);
+            this.chatfield = new ChatField(this);
             this.mps.uid = this.players[0].uid;
             this.mps.ws.onopen = function () {//链接创建成功回调
                 outer.mps.send_create_player(outer.root.settings.username);
