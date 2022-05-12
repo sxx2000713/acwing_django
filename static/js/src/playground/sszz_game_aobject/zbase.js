@@ -7,7 +7,6 @@ class SSZZGameObject {
         this.has_start = false; //是否执行start
         this.deltatime = 0; //当前帧距离上一帧的距离
         this.uid = this.create_uid();
-        console.log(this.uid);
     }
 
     create_uid() {
@@ -24,6 +23,10 @@ class SSZZGameObject {
     }
 
     update() { //每帧执行一次
+
+    }
+
+    late_update() {
 
     }
 
@@ -57,6 +60,12 @@ let SSZZ_GAME_ANIMATION = function (timestamp) {
             obj.update();
         }
     }
+
+    for (let i = 0; i < SSZZ_GAME_OBJECTS.length; i++) {
+        let obj = SSZZ_GAME_OBJECTS[i];
+        obj.late_update();
+    }
+
     last_timestamp = timestamp;
     requestAnimationFrame(SSZZ_GAME_ANIMATION);
 }

@@ -16,6 +16,11 @@ from queue import Queue
 from time import sleep
 from threading import Thread
 
+from acapp.asgi import channel_layer
+#将并行转为串行
+from asgiref.sync import async_to_sync
+from django.core.cache import cache
+
 queue = Queue()
 
 class Player:
@@ -23,7 +28,7 @@ class Player:
         self.score = score
         self.uid = uid
         self.username = username
-        self.channel_name = channel_name
+        self.channel_name = "123" #未解决：channel_name无法传入
         self.waiting_time = 0 #等待时间
 
 #匹配池
@@ -35,6 +40,8 @@ class Pool:
         self.players.append(player)
     #匹配策略：
     def check_match(self, a, b):
+        # if a.username == b.username:
+        #     return False
         dt = abs(a.score - b.score)
         a_max_dif = a.waiting_time * 50
         b_max_dif = b.waiting_time * 50
@@ -42,6 +49,28 @@ class Pool:
 
     def match_success(self, ps):
         print("Match Success: %s %s %s" %(ps[0].username, ps[1].username, ps[2].username))
+        room_name = "room-%s-%s-%s" % (ps[0].uid, ps[1].uid, ps[2].uid)
+        players = []
+        print(room_name)
+        for p in ps:
+            async_to_sync(channel_layer.group_add)(room_name, p.channel_name)
+            players.append({
+                'uid':p.uid,
+                'username':p.username,
+                'hp':100
+            })
+        cache.set(room_name, players, 3600)
+        for p in ps:
+            async_to_sync(channel_layer.group_send)(
+                room_name,
+                {
+                    'type':"group_send_event",
+                    'event':'create player',
+                    'uid':p.uid,
+                    'username':p.username
+                }
+            )
+
     #总匹配
     def match(self):
         while len(self.players) >= 3:
@@ -80,7 +109,7 @@ def get_player_from_queue():
         return None
 
 class MatchHandler:
-    def add_player(self,score, uid, username, channel_name):
+    def add_player(self, score, uid, username, channel_name):
         player = Player(score, uid, username, channel_name)
         queue.put(player)
         return 0
@@ -93,11 +122,11 @@ if __name__ == '__main__':
     tfactory = TTransport.TBufferedTransportFactory()
     pfactory = TBinaryProtocol.TBinaryProtocolFactory()
 
-    server = TServer.TSimpleServer(processor, transport, tfactory, pfactory)
+    # server = TServer.TSimpleServer(processor, transport, tfactory, pfactory)
 
     # You could do one of these for a multithreaded server
-    # server = TServer.TThreadedServer(
-    #     processor, transport, tfactory, pfactory)
+    server = TServer.TThreadedServer(
+        processor, transport, tfactory, pfactory)
     # server = TServer.TThreadPoolServer(
     #     processor, transport, tfactory, pfactory)
 

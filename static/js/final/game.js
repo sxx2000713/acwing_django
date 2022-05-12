@@ -72,7 +72,6 @@ class SSZZGameObject {
         this.has_start = false; //是否执行start
         this.deltatime = 0; //当前帧距离上一帧的距离
         this.uid = this.create_uid();
-        console.log(this.uid);
     }
 
     create_uid() {
@@ -89,6 +88,10 @@ class SSZZGameObject {
     }
 
     update() { //每帧执行一次
+
+    }
+
+    late_update() {
 
     }
 
@@ -122,6 +125,12 @@ let SSZZ_GAME_ANIMATION = function (timestamp) {
             obj.update();
         }
     }
+
+    for (let i = 0; i < SSZZ_GAME_OBJECTS.length; i++) {
+        let obj = SSZZ_GAME_OBJECTS[i];
+        obj.late_update();
+    }
+
     last_timestamp = timestamp;
     requestAnimationFrame(SSZZ_GAME_ANIMATION);
 }
@@ -186,6 +195,60 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
         setTimeout(function () {
             outer.$history.fadeOut();
         }, 3000);
+    }
+}class EndBoard extends SSZZGameObject {
+    constructor(playground) {
+        super();
+        this.playground = playground;
+        this.ctx = this.playground.game_map.ctx;
+
+        this.state = null;//win loss
+        this.win_image = new Image();
+        this.win_image.src = "https://cdn.acwing.com/media/article/image/2021/12/17/1_8f58341a5e-win.png";
+        this.lose_image = new Image();
+        this.lose_image.src = "https://cdn.acwing.com/media/article/image/2021/12/17/1_9254b5f95e-lose.png";
+        this.start();
+    }
+
+    start() {
+    }
+
+    listen_events() {
+        let outer = this;
+        let $canvas = this.playground.game_map.$canvas;
+        $canvas.click(function () {
+            outer.playground.hide();
+            outer.playground.root.menu.show();
+        })
+    }
+
+    win() {
+        this.state = "win";
+        let outer = this;
+        setTimeout(function () {
+            outer.listen_events();
+        }, 1000)
+    }
+
+    lose() {
+        this.state = "lose";
+        let outer = this;
+        setTimeout(function () {
+            outer.listen_events();
+        }, 1000)
+    }
+
+    late_update() {
+        this.render();
+    }
+
+    render() {
+        let len = this.playground.height / 2;
+        if (this.state === "win") {
+            this.ctx.drawImage(this.win_image, this.playground.width / 2 - len / 2, this.playground.height / 2 - len / 2, len, len);
+        } else if (this.state === "lose") {
+            this.ctx.drawImage(this.lose_image, this.playground.width / 2 - len / 2, this.playground.height / 2 - len / 2, len, len);
+        }
     }
 }class GameMap extends SSZZGameObject {
     constructor(playground) {
@@ -476,8 +539,16 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
         }
     }
 
+    update_result() {
+        if (this.playground.state === "fighting" && this.character === "me" && this.playground.players.length === 1) {
+            this.playground.state = "over";
+            this.playground.endboard.win();
+        }
+    }
+
     update() {
         this.update_move();
+        this.update_result();
         this.render();
     }
 
@@ -501,6 +572,10 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
     }
 
     on_destory() {
+        if (this.character === "me" && this.playground.state === "fighting") {
+            this.playground.endboard.lose();
+            this.playground.state = "over";
+        }
         for (let i = 0; i < this.playground.players.length; i++) {
             if (this.playground.players[i] === this) {
                 this.playground.players.splice(i, 1);
@@ -758,6 +833,7 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
         this.height = this.$playground.height();
         this.game_map = new GameMap(this);
         this.notice_board = new NoticeBoard(this);
+        this.endboard = new EndBoard(this);
         this.player_cnt = 0;
         this.resize();
         this.state = "waiting"; // waiting > fighting > over
@@ -771,6 +847,7 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
         } else if (mode === "multiend") {
             this.mps = new MultiPlayerSocket(this);
             this.chatfield = new ChatField(this);
+
             this.mps.uid = this.players[0].uid;
             this.mps.ws.onopen = function () {//链接创建成功回调
                 outer.mps.send_create_player(outer.root.settings.username);
@@ -779,6 +856,24 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
 
     }
     hide() {
+        while (this.players && this.players.length > 0) {
+            this.players[0].destory();
+        }
+        if (this.game_map) {
+            this.game_map.destory();
+            this.game_map = null;
+        }
+
+        if (this.notice_board) {
+            this.notice_board.destory();
+            this.notice_board = null;
+        }
+
+        if (this.endboard) {
+            this.endboard.destory();
+            this.endboard = null;
+        }
+        this.$playground.empty();
         this.$playground.hide();
     }
 

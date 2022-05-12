@@ -190,8 +190,16 @@ class Player extends SSZZGameObject {
         }
     }
 
+    update_result() {
+        if (this.playground.state === "fighting" && this.character === "me" && this.playground.players.length === 1) {
+            this.playground.state = "over";
+            this.playground.endboard.win();
+        }
+    }
+
     update() {
         this.update_move();
+        this.update_result();
         this.render();
     }
 
@@ -215,6 +223,10 @@ class Player extends SSZZGameObject {
     }
 
     on_destory() {
+        if (this.character === "me" && this.playground.state === "fighting") {
+            this.playground.endboard.lose();
+            this.playground.state = "over";
+        }
         for (let i = 0; i < this.playground.players.length; i++) {
             if (this.playground.players[i] === this) {
                 this.playground.players.splice(i, 1);

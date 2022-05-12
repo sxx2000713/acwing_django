@@ -9,6 +9,8 @@ from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 
 from match_system.src.match_server.match_services import Match
+from game.models.player.player import Player
+from channels.db import database_sync_to_async
 
 class MultiPlayer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -67,15 +69,23 @@ class MultiPlayer(AsyncWebsocketConsumer):
     # Create a client to use the protocol encoder
         client = Match.Client(protocol)
 
+        def db_get_player():
+            return Player.objects.get(user__username=data['username'])
+        player = await database_sync_to_async(db_get_player)()
+
     # Connect!
         transport.open()
-        client.add_player(1500, data['uid'], data['username'], self.channel_name)
+        client.add_player(player.score, data['uid'], data['username'], self.channel_name)
 
     # Close!
         transport.close()
 
     
     async def group_send_event(self, data):
+        if not self.room_name:
+            keys = cache.keys('*%s*' % (self.uid))
+            if keys:
+                self.room_name = keys[0]
         await self.send(text_data=json.dumps(data))
 
     async def move_to(self, data):
@@ -104,6 +114,31 @@ class MultiPlayer(AsyncWebsocketConsumer):
         )
     
     async def enemy_attacked(self, data):
+        if self.room_name:
+            return
+        players = cache.get(self.room_name)
+        if not players:
+            return 
+        for player in players:
+            if player['uid'] == data['enemy_uid']:
+                player['hp'] -= 25
+        remain_cnt = 0
+        for player in players:
+            if player['hp'] > 0:
+                remain_cnt += 1
+        if remain_cnt <= 1:
+            def db_update_player_score(username, score):
+                player = Player.objects.get(user__username=username)
+                player.score += score
+                player.save()
+            for player in players:
+                if player['hp'] <= 0 :
+                    await database_sync_to_async(db_update_player_score)(player['username'], -5)
+                else:
+                    await database_sync_to_async(db_update_player_score)(player['username'], 10)
+        else:
+            if self.room_name:
+                cache.set(self.room_name, players, 3600)
         await self.channel_layer.group_send(
             self.room_name,
             {

@@ -30,6 +30,7 @@ class SSZZGamePlayground {
         this.height = this.$playground.height();
         this.game_map = new GameMap(this);
         this.notice_board = new NoticeBoard(this);
+        this.endboard = new EndBoard(this);
         this.player_cnt = 0;
         this.resize();
         this.state = "waiting"; // waiting > fighting > over
@@ -43,6 +44,7 @@ class SSZZGamePlayground {
         } else if (mode === "multiend") {
             this.mps = new MultiPlayerSocket(this);
             this.chatfield = new ChatField(this);
+
             this.mps.uid = this.players[0].uid;
             this.mps.ws.onopen = function () {//链接创建成功回调
                 outer.mps.send_create_player(outer.root.settings.username);
@@ -51,6 +53,24 @@ class SSZZGamePlayground {
 
     }
     hide() {
+        while (this.players && this.players.length > 0) {
+            this.players[0].destory();
+        }
+        if (this.game_map) {
+            this.game_map.destory();
+            this.game_map = null;
+        }
+
+        if (this.notice_board) {
+            this.notice_board.destory();
+            this.notice_board = null;
+        }
+
+        if (this.endboard) {
+            this.endboard.destory();
+            this.endboard = null;
+        }
+        this.$playground.empty();
         this.$playground.hide();
     }
 
