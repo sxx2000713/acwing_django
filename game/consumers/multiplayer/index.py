@@ -40,7 +40,7 @@ class MultiPlayer(AsyncWebsocketConsumer):
             print('disconnect')
             await self.channel_layer.group_discard(self.room_name, self.channel_name)
 
-    async def create_player(self,data):
+    async def create_player(self, data):
         # players = cache.get(self.room_name)
         # players.append({
         #     'uid':data['uid'],
@@ -75,7 +75,7 @@ class MultiPlayer(AsyncWebsocketConsumer):
 
     # Connect!
         transport.open()
-        client.add_player(player.score, data['uid'], data['username'], self.channel_name)
+        client.add_player(player.score, data['uid'], data['username'], data['photo'], self.channel_name)
 
     # Close!
         transport.close()

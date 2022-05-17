@@ -9,7 +9,9 @@ def getinfo(request):
             'result':"fail",
         })
     else:
+        player = Player.objects.get(user=user)
         return JsonResponse({
             'result':"success",
-            'username': user.username,
+            'username': player.user.username,
+            'photo':player.photo,
         })

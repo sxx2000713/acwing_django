@@ -1,5 +1,5 @@
 class Player extends SSZZGameObject {
-    constructor(playground, X, Y, radius, color, speed, character, username) {
+    constructor(playground, X, Y, radius, color, speed, character, username, photo) {
         super();
         this.playground = playground;
         this.ctx = this.playground.game_map.ctx;
@@ -21,10 +21,11 @@ class Player extends SSZZGameObject {
         this.fraction = 0.9;
         this.spent_time = 0;
         this.fireballs = [];
-        // if (this.character !== "robot") {
-        //     this.img = new Image();
-        //     this.img.src = this.photo;
-        // }
+        this.photo = photo;
+        if (this.character !== "robot") {
+            this.img = new Image();
+            this.img.src = this.photo;
+        }
     }
 
     start() {
@@ -204,21 +205,21 @@ class Player extends SSZZGameObject {
     }
 
     render() {
-        // if (this.is_me) {
-        //     this.ctx.save();
-        //     this.ctx.beginPath();
-        //     this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-        //     this.ctx.stroke();
-        //     this.ctx.clip();
-        //     this.ctx.drawImage(this.img, this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
-        //     this.ctx.restore();
-        // } else {
         let scale = this.playground.scale;
-        this.ctx.beginPath();
-        this.ctx.arc(this.x * scale, this.y * scale, this.radius * scale, 0, Math.PI * 2, false);
-        this.ctx.fillStyle = this.color;
-        this.ctx.fill();
-        // }
+        if (this.character === "me") {
+            this.ctx.save();
+            this.ctx.beginPath();
+            this.ctx.arc(this.x * scale, this.y * scale, this.radius * scale, 0, Math.PI * 2, false);
+            this.ctx.stroke();
+            this.ctx.clip();
+            this.ctx.drawImage(this.img, (this.x - this.radius) * scale, (this.y - this.radius) * scale, this.radius * 2 * scale, this.radius * 2 * scale);
+            this.ctx.restore();
+        } else {
+            this.ctx.beginPath();
+            this.ctx.arc(this.x * scale, this.y * scale, this.radius * scale, 0, Math.PI * 2, false);
+            this.ctx.fillStyle = this.color;
+            this.ctx.fill();
+        }
 
     }
 

@@ -19,12 +19,13 @@ all_structs = []
 
 
 class Iface(object):
-    def add_player(self, score, uid, username, channel_name):
+    def add_player(self, score, uid, username, photo, channel_name):
         """
         Parameters:
          - score
          - uid
          - username
+         - photo
          - channel_name
 
         """
@@ -38,24 +39,26 @@ class Client(Iface):
             self._oprot = oprot
         self._seqid = 0
 
-    def add_player(self, score, uid, username, channel_name):
+    def add_player(self, score, uid, username, photo, channel_name):
         """
         Parameters:
          - score
          - uid
          - username
+         - photo
          - channel_name
 
         """
-        self.send_add_player(score, uid, username, channel_name)
+        self.send_add_player(score, uid, username, photo, channel_name)
         return self.recv_add_player()
 
-    def send_add_player(self, score, uid, username, channel_name):
+    def send_add_player(self, score, uid, username, photo, channel_name):
         self._oprot.writeMessageBegin('add_player', TMessageType.CALL, self._seqid)
         args = add_player_args()
         args.score = score
         args.uid = uid
         args.username = username
+        args.photo = photo
         args.channel_name = channel_name
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
@@ -110,7 +113,7 @@ class Processor(Iface, TProcessor):
         iprot.readMessageEnd()
         result = add_player_result()
         try:
-            result.success = self._handler.add_player(args.score, args.uid, args.username, args.channel_name)
+            result.success = self._handler.add_player(args.score, args.uid, args.username, args.photo, args.channel_name)
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
@@ -136,15 +139,17 @@ class add_player_args(object):
      - score
      - uid
      - username
+     - photo
      - channel_name
 
     """
 
 
-    def __init__(self, score=None, uid=None, username=None, channel_name=None,):
+    def __init__(self, score=None, uid=None, username=None, photo=None, channel_name=None,):
         self.score = score
         self.uid = uid
         self.username = username
+        self.photo = photo
         self.channel_name = channel_name
 
     def read(self, iprot):
@@ -173,6 +178,11 @@ class add_player_args(object):
                     iprot.skip(ftype)
             elif fid == 4:
                 if ftype == TType.STRING:
+                    self.photo = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.STRING:
                     self.channel_name = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
@@ -197,6 +207,10 @@ class add_player_args(object):
         if self.username is not None:
             oprot.writeFieldBegin('username', TType.STRING, 3)
             oprot.writeString(self.username.encode('utf-8') if sys.version_info[0] == 2 else self.username)
+            oprot.writeFieldEnd()
+        if self.photo is not None:
+            oprot.writeFieldBegin('photo', TType.STRING, 4)
+            oprot.writeString(self.photo.encode('utf-8') if sys.version_info[0] == 2 else self.photo)
             oprot.writeFieldEnd()
         if self.channel_name is not None:
             oprot.writeFieldBegin('channel_name', TType.STRING, 5)
@@ -224,7 +238,8 @@ add_player_args.thrift_spec = (
     (1, TType.I32, 'score', None, None, ),  # 1
     (2, TType.STRING, 'uid', 'UTF8', None, ),  # 2
     (3, TType.STRING, 'username', 'UTF8', None, ),  # 3
-    (4, TType.STRING, 'channel_name', 'UTF8', None, ),  # 4
+    (4, TType.STRING, 'photo', 'UTF8', None, ),  # 4
+    (5, TType.STRING, 'channel_name', 'UTF8', None, ),  # 5
 )
 
 

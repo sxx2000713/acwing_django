@@ -348,7 +348,7 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
         this.ctx.fill();
     }
 }class Player extends SSZZGameObject {
-    constructor(playground, X, Y, radius, color, speed, character, username) {
+    constructor(playground, X, Y, radius, color, speed, character, username, photo) {
         super();
         this.playground = playground;
         this.ctx = this.playground.game_map.ctx;
@@ -370,10 +370,11 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
         this.fraction = 0.9;
         this.spent_time = 0;
         this.fireballs = [];
-        // if (this.character !== "robot") {
-        //     this.img = new Image();
-        //     this.img.src = this.photo;
-        // }
+        this.photo = photo;
+        if (this.character !== "robot") {
+            this.img = new Image();
+            this.img.src = this.photo;
+        }
     }
 
     start() {
@@ -553,21 +554,21 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
     }
 
     render() {
-        // if (this.is_me) {
-        //     this.ctx.save();
-        //     this.ctx.beginPath();
-        //     this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-        //     this.ctx.stroke();
-        //     this.ctx.clip();
-        //     this.ctx.drawImage(this.img, this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
-        //     this.ctx.restore();
-        // } else {
         let scale = this.playground.scale;
-        this.ctx.beginPath();
-        this.ctx.arc(this.x * scale, this.y * scale, this.radius * scale, 0, Math.PI * 2, false);
-        this.ctx.fillStyle = this.color;
-        this.ctx.fill();
-        // }
+        if (this.character === "me") {
+            this.ctx.save();
+            this.ctx.beginPath();
+            this.ctx.arc(this.x * scale, this.y * scale, this.radius * scale, 0, Math.PI * 2, false);
+            this.ctx.stroke();
+            this.ctx.clip();
+            this.ctx.drawImage(this.img, (this.x - this.radius) * scale, (this.y - this.radius) * scale, this.radius * 2 * scale, this.radius * 2 * scale);
+            this.ctx.restore();
+        } else {
+            this.ctx.beginPath();
+            this.ctx.arc(this.x * scale, this.y * scale, this.radius * scale, 0, Math.PI * 2, false);
+            this.ctx.fillStyle = this.color;
+            this.ctx.fill();
+        }
 
     }
 
@@ -684,12 +685,13 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
         this.recive();
     }
 
-    send_create_player(username) {
+    send_create_player(username, photo) {
         let outer = this;
         this.ws.send(JSON.stringify({
             'event': "create player",
             'uid': outer.uid,
             'username': username,
+            'photo': photo
         }))
     }
     recive() {
@@ -839,7 +841,7 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
         this.state = "waiting"; // waiting > fighting > over
 
         this.players = [];
-        this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, "lightgreen", 0.15, "me", this.root.settings.username));
+        this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, "lightgreen", 0.15, "me", this.root.settings.username, this.root.settings.photo));
         if (mode === "single") {
             for (let i = 0; i < 5; i++) {
                 this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, "lightblue", 0.15, "robot"));
@@ -850,7 +852,7 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
 
             this.mps.uid = this.players[0].uid;
             this.mps.ws.onopen = function () {//链接创建成功回调
-                outer.mps.send_create_player(outer.root.settings.username);
+                outer.mps.send_create_player(outer.root.settings.username, outer.root.settings.photo);
             };
         }
 
@@ -1058,6 +1060,7 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
             url: "https://app2347.acapp.acwing.com.cn/settings/gamelogout/",
             type: "GET",
             success: function (resp) {
+                console.log(resp);
                 if (resp.result === "success") {
                     location.reload();
                 }
@@ -1070,12 +1073,15 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
         $.ajax({
             url: "https://app2347.acapp.acwing.com.cn/settings/getinfo/",
             type: "GET",
+            async: false,
             success: function (resp) {
                 if (resp.result === "success") {
+
                     outer.username = resp.username;
                     outer.photo = resp.photo;
                     outer.hide();
                     outer.root.menu.show();
+
                 } else {
                     outer.login();
                 }
@@ -1088,7 +1094,7 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
     }
 
     show() {
-        this.Settings.show();
+        this.$settings.show();
     }
 
     start() {
@@ -1099,8 +1105,8 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
     constructor(id) {
         this.id = id;
         this.$sszz_game = $('#' + id);
-        this.settings = new Settings(this);
         this.menu = new SSZZGameMenu(this);
+        this.settings = new Settings(this);
         this.playground = new SSZZGamePlayground(this);
 
         this.start();

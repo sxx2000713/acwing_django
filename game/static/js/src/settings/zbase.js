@@ -167,6 +167,7 @@ class Settings {
             url: "https://app2347.acapp.acwing.com.cn/settings/gamelogout/",
             type: "GET",
             success: function (resp) {
+                console.log(resp);
                 if (resp.result === "success") {
                     location.reload();
                 }
@@ -179,12 +180,15 @@ class Settings {
         $.ajax({
             url: "https://app2347.acapp.acwing.com.cn/settings/getinfo/",
             type: "GET",
+            async: false,
             success: function (resp) {
                 if (resp.result === "success") {
+
                     outer.username = resp.username;
                     outer.photo = resp.photo;
                     outer.hide();
                     outer.root.menu.show();
+
                 } else {
                     outer.login();
                 }
@@ -197,7 +201,7 @@ class Settings {
     }
 
     show() {
-        this.Settings.show();
+        this.$settings.show();
     }
 
     start() {

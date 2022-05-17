@@ -36,7 +36,7 @@ class SSZZGamePlayground {
         this.state = "waiting"; // waiting > fighting > over
 
         this.players = [];
-        this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, "lightgreen", 0.15, "me", this.root.settings.username));
+        this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, "lightgreen", 0.15, "me", this.root.settings.username, this.root.settings.photo));
         if (mode === "single") {
             for (let i = 0; i < 5; i++) {
                 this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, "lightblue", 0.15, "robot"));
@@ -47,7 +47,7 @@ class SSZZGamePlayground {
 
             this.mps.uid = this.players[0].uid;
             this.mps.ws.onopen = function () {//链接创建成功回调
-                outer.mps.send_create_player(outer.root.settings.username);
+                outer.mps.send_create_player(outer.root.settings.username, outer.root.settings.photo);
             };
         }
 

@@ -9,12 +9,13 @@ class MultiPlayerSocket {
         this.recive();
     }
 
-    send_create_player(username) {
+    send_create_player(username, photo) {
         let outer = this;
         this.ws.send(JSON.stringify({
             'event': "create player",
             'uid': outer.uid,
             'username': username,
+            'photo': photo
         }))
     }
     recive() {

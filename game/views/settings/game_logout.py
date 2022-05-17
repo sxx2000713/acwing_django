@@ -9,5 +9,5 @@ def game_logout(request):
         })
     logout(request)
     return JsonResponse({
-        'result':"success"
+        'result':"success",
     })

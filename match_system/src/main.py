@@ -24,11 +24,12 @@ from django.core.cache import cache
 queue = Queue()
 
 class Player:
-    def __init__(self, score, uid, username, channel_name):
+    def __init__(self, score, uid, username, photo, channel_name):
         self.score = score
         self.uid = uid
         self.username = username
-        self.channel_name = "123" #未解决：channel_name无法传入
+        self.photo = photo
+        self.channel_name = channel_name #未解决：channel_name无法传入
         self.waiting_time = 0 #等待时间
 
 #匹配池
@@ -57,6 +58,7 @@ class Pool:
             players.append({
                 'uid':p.uid,
                 'username':p.username,
+                'photo':p.photo,
                 'hp':100
             })
         cache.set(room_name, players, 3600)
@@ -109,8 +111,8 @@ def get_player_from_queue():
         return None
 
 class MatchHandler:
-    def add_player(self, score, uid, username, channel_name):
-        player = Player(score, uid, username, channel_name)
+    def add_player(self, score, uid, username, photo, channel_name):
+        player = Player(score, uid, username, photo, channel_name)
         queue.put(player)
         return 0
 
