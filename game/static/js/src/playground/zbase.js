@@ -15,6 +15,10 @@ class SSZZGamePlayground {
         $(window).resize(function () {
             outer.resize();
         });
+
+        $(window).on("contextmenu", function () {
+            return false;
+        });
     }
 
     update() {

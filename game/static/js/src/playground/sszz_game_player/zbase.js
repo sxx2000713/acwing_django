@@ -32,7 +32,7 @@ class Player extends SSZZGameObject {
         let scale = this.playground.scale;
         this.playground.player_cnt++;
         this.playground.notice_board.write("已就绪：" + this.playground.player_cnt + "人");
-        if (this.playground.player_cnt >= 2) {
+        if (this.playground.player_cnt >= 3) {
             this.playground.state = "fighting";
             this.playground.notice_board.write("Fighting");
         }
@@ -47,23 +47,22 @@ class Player extends SSZZGameObject {
 
     add_listening_events() {
         let outer = this;
-        let scale = this.playground.scale;
         this.playground.game_map.$canvas.on("contextmenu", function () {
             return false;
         });
         this.playground.game_map.$canvas.mousedown(function (e) {
-            if (outer.playground.state !== "fighting") return false;
+            if (outer.playground.state !== "fighting") return true;
             const rect = outer.ctx.canvas.getBoundingClientRect();
             if (e.which === 3) {
-                let tx = (e.clientX - rect.left) / scale;
-                let ty = (e.clientY - rect.top) / scale;
+                let tx = (e.clientX - rect.left) / outer.playground.scale;
+                let ty = (e.clientY - rect.top) / outer.playground.scale;
                 outer.move_to(tx, ty);
                 if (outer.playground.mode === "multiend") {
                     outer.playground.mps.send_move_to(tx, ty);
                 }
             } else if (e.which === 1) {
-                let tx = (e.clientX - rect.left) / scale;
-                let ty = (e.clientY - rect.top) / scale;
+                let tx = (e.clientX - rect.left) / outer.playground.scale;
+                let ty = (e.clientY - rect.top) / outer.playground.scale;
                 if (outer.cur_skill === "fireball") {
                     let fireball = outer.shoot_fireball(tx, ty);
                     if (outer.playground.mode === "multiend") {
