@@ -23,7 +23,6 @@ class MultiPlayerSocket {
         this.ws.onmessage = function (e) {
             let data = JSON.parse(e.data);
             let uid = data.uid;
-            console.log(data);
             if (uid === outer.uid) return false;
             let event = data.event;
             if (event === "create player") {
@@ -71,7 +70,7 @@ class MultiPlayerSocket {
         }
     }
 
-    send_attack(ball_uid, tx, ty) {
+    send_attack(tx, ty, ball_uid) {
         let outer = this;
         this.ws.send(JSON.stringify({
             'event': "attack",

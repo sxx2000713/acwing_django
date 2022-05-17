@@ -127,7 +127,6 @@ class Settings {
                 password: password,
             },
             success: function (resp) {
-                console.log(resp);
                 if (resp.result === "success") {
                     location.reload();
                 } else {
@@ -167,7 +166,6 @@ class Settings {
             url: "https://app2347.acapp.acwing.com.cn/settings/gamelogout/",
             type: "GET",
             success: function (resp) {
-                console.log(resp);
                 if (resp.result === "success") {
                     location.reload();
                 }

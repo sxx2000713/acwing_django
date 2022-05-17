@@ -43,10 +43,8 @@ class SSZZGameMenu {
         this.$multi.click(function () {
             outer.hide();
             outer.root.playground.show("multiend");
-            console.log("click multi button");
         });
         this.$setting.click(function () {
-            console.log("click setting button");
         });
         this.$logout.click(function () {
             outer.root.settings.logout_remote();
@@ -452,10 +450,12 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
     }
 
     destory_fireball(ball_uid) {
+
         for (let i = 0; i < this.fireballs.length; i++) {
             let fireball = this.fireballs[i];
-            if (fireball.ball_uid === ball_uid) {
+            if (fireball.uid === ball_uid) {
                 fireball.destory();
+                console.log();
                 break;
             }
         }
@@ -494,7 +494,8 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
         attacker.destory_fireball(ball_uid);
         this.x = x;
         this.y = y;
-        this.is_attacked(damage, angle);
+        this.is_attacked(angle, damage);
+
     }
 
     move_to(tx, ty) {
@@ -654,6 +655,7 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
         if (this.playground.mode === "multiend") {
             this.playground.mps.send_enemy_is_attacked(player.uid, player.x, player.y, angle, this.damage, this.uid);
         }
+
     }
 
     render() {
@@ -698,7 +700,6 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
         this.ws.onmessage = function (e) {
             let data = JSON.parse(e.data);
             let uid = data.uid;
-            console.log(data);
             if (uid === outer.uid) return false;
             let event = data.event;
             if (event === "create player") {
@@ -746,7 +747,7 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
         }
     }
 
-    send_attack(ball_uid, tx, ty) {
+    send_attack(tx, ty, ball_uid) {
         let outer = this;
         this.ws.send(JSON.stringify({
             'event': "attack",
@@ -1023,7 +1024,6 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
                 password: password,
             },
             success: function (resp) {
-                console.log(resp);
                 if (resp.result === "success") {
                     location.reload();
                 } else {
@@ -1063,7 +1063,6 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
             url: "https://app2347.acapp.acwing.com.cn/settings/gamelogout/",
             type: "GET",
             success: function (resp) {
-                console.log(resp);
                 if (resp.result === "success") {
                     location.reload();
                 }

@@ -103,10 +103,12 @@ class Player extends SSZZGameObject {
     }
 
     destory_fireball(ball_uid) {
+
         for (let i = 0; i < this.fireballs.length; i++) {
             let fireball = this.fireballs[i];
-            if (fireball.ball_uid === ball_uid) {
+            if (fireball.uid === ball_uid) {
                 fireball.destory();
+                console.log();
                 break;
             }
         }
@@ -145,7 +147,8 @@ class Player extends SSZZGameObject {
         attacker.destory_fireball(ball_uid);
         this.x = x;
         this.y = y;
-        this.is_attacked(damage, angle);
+        this.is_attacked(angle, damage);
+
     }
 
     move_to(tx, ty) {

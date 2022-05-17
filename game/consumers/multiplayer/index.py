@@ -114,7 +114,7 @@ class MultiPlayer(AsyncWebsocketConsumer):
         )
     
     async def enemy_attacked(self, data):
-        if self.room_name:
+        if not self.room_name:
             return
         players = cache.get(self.room_name)
         if not players:

@@ -43,10 +43,8 @@ class SSZZGameMenu {
         this.$multi.click(function () {
             outer.hide();
             outer.root.playground.show("multiend");
-            console.log("click multi button");
         });
         this.$setting.click(function () {
-            console.log("click setting button");
         });
         this.$logout.click(function () {
             outer.root.settings.logout_remote();

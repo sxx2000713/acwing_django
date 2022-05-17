@@ -69,6 +69,7 @@ class Fireball extends SSZZGameObject {
         if (this.playground.mode === "multiend") {
             this.playground.mps.send_enemy_is_attacked(player.uid, player.x, player.y, angle, this.damage, this.uid);
         }
+
     }
 
     render() {
