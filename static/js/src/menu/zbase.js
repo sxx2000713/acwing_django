@@ -12,9 +12,6 @@ class SSZZGameMenu {
                     多人模式
                 </div>
                 <br>
-                <div class="sszz-game-menu-buttonfield-item sszz-game-menu-buttonfield-item-setting">
-                    设置
-                </div>
                 <div class="sszz-game-menu-buttonfield-item sszz-game-menu-buttonfield-item-logout">
                     退出
                 </div>

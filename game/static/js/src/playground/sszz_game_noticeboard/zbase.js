@@ -1,6 +1,7 @@
 class NoticeBoard {
     constructor(root) {
         this.root = root;
+        this.rankscore = this.root.settings.rank;
         this.$noticeboard = $(`
             <div class="sszz-game-noticeboard">
                 <div class="sszz-game-noticeboard-submit">
@@ -12,6 +13,14 @@ class NoticeBoard {
                     <div class="sperate">
                         <div class="sszz-game-noticeboard-item button2">
                             <button>返回</button>
+                        </div>
+                    </div>
+                    <div class="sperate">
+                        <div class="sszz-game-noticeboard-title notice_username">
+                        </div>
+                    </div>
+                    <div class="sperate">
+                        <div class="sszz-game-noticeboard-title rank_score">
                         </div>
                     </div>
                 </div>
@@ -54,6 +63,8 @@ class NoticeBoard {
         this.$start_match = this.$noticeboard.find(".button1 button");
         this.$return_menu = this.$noticeboard.find(".button2 button");
         this.$cancel_match = this.$noticeboard.find(".button3 button");
+        this.$rank_score = this.$noticeboard.find(".rank_score");
+        this.$notice_username = this.$noticeboard.find(".notice_username")
         // this.$confirm = this.$noticeboard.find(".button4 button");
         // this.$cancel = this.$noticeboard.find(".button5 button");
         // this.ctx = this.playground.game_map.ctx;
@@ -82,8 +93,9 @@ class NoticeBoard {
         })
         this.$cancel_match.click(function () {
             outer.$waiting_board.hide();
-            outer.$match_board.show();
+            outer.root.menu.show();
             outer.cancel_match();
+            location.reload();
         })
         // this.$confirm.click(function () {
         //     outer.start_game();
@@ -106,6 +118,10 @@ class NoticeBoard {
     show() {
         this.$noticeboard.show();
         this.$match_board.show();
+        let text_rank = "当前rank分：" + this.rankscore + "分";
+        let text_usname = this.root.settings.username;
+        this.$notice_username.html(text_usname);
+        this.$rank_score.html(text_rank)
     }
 
     hide() {
@@ -114,8 +130,9 @@ class NoticeBoard {
 
     cancel_match() {
         let mps = this.root.playground.mps
+        let player = mps.firstplayer;
+        mps.send_cancel_match(mps.uid, player.username, player.photo, player.rank);
         this.root.playground.hide();
-        mps.send_cancel_match(mps.uid);
     }
 
     start_game() {
@@ -128,10 +145,8 @@ class NoticeBoard {
         setTimeout(function () {
             outer.root.playground.$playground.show();
         }, 3000);
+        this.$success_board.hide();
     }
 
-    cancel() {
-
-    }
 
 }

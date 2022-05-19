@@ -14,6 +14,8 @@ class Fireball extends SSZZGameObject {
         this.move_length = move_length;
         this.eps = 0.01;
         this.damage = damage;
+        this.img = new Image();
+        this.img.src = "/static/image/player/attack.png";
     }
 
     start() {
@@ -74,10 +76,17 @@ class Fireball extends SSZZGameObject {
 
     render() {
         let scale = this.playground.scale;
+        // this.ctx.beginPath();
+        // this.ctx.arc(this.x * scale, this.y * scale, this.radius * scale, 0, Math.PI * 2, false);
+        // this.ctx.fillStyle = this.color;
+        // this.ctx.fill();
+        this.ctx.save();
         this.ctx.beginPath();
         this.ctx.arc(this.x * scale, this.y * scale, this.radius * scale, 0, Math.PI * 2, false);
-        this.ctx.fillStyle = this.color;
-        this.ctx.fill();
+        this.ctx.stroke();
+        this.ctx.clip();
+        this.ctx.drawImage(this.img, (this.x - this.radius) * scale, (this.y - this.radius) * scale, this.radius * 2 * scale, this.radius * 2 * scale);
+        this.ctx.restore();
     }
 
     on_destroy() {

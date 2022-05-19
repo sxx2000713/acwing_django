@@ -19,7 +19,7 @@ all_structs = []
 
 
 class Iface(object):
-    def add_player(self, score, uid, username, photo, channel_name):
+    def add_player(self, score, uid, username, photo, channel_name, rank):
         """
         Parameters:
          - score
@@ -27,14 +27,20 @@ class Iface(object):
          - username
          - photo
          - channel_name
+         - rank
 
         """
         pass
 
-    def remove_player(self, uid):
+    def remove_player(self, score, uid, username, photo, channel_name, rank):
         """
         Parameters:
+         - score
          - uid
+         - username
+         - photo
+         - channel_name
+         - rank
 
         """
         pass
@@ -47,7 +53,7 @@ class Client(Iface):
             self._oprot = oprot
         self._seqid = 0
 
-    def add_player(self, score, uid, username, photo, channel_name):
+    def add_player(self, score, uid, username, photo, channel_name, rank):
         """
         Parameters:
          - score
@@ -55,12 +61,13 @@ class Client(Iface):
          - username
          - photo
          - channel_name
+         - rank
 
         """
-        self.send_add_player(score, uid, username, photo, channel_name)
+        self.send_add_player(score, uid, username, photo, channel_name, rank)
         return self.recv_add_player()
 
-    def send_add_player(self, score, uid, username, photo, channel_name):
+    def send_add_player(self, score, uid, username, photo, channel_name, rank):
         self._oprot.writeMessageBegin('add_player', TMessageType.CALL, self._seqid)
         args = add_player_args()
         args.score = score
@@ -68,6 +75,7 @@ class Client(Iface):
         args.username = username
         args.photo = photo
         args.channel_name = channel_name
+        args.rank = rank
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
@@ -87,19 +95,29 @@ class Client(Iface):
             return result.success
         raise TApplicationException(TApplicationException.MISSING_RESULT, "add_player failed: unknown result")
 
-    def remove_player(self, uid):
+    def remove_player(self, score, uid, username, photo, channel_name, rank):
         """
         Parameters:
+         - score
          - uid
+         - username
+         - photo
+         - channel_name
+         - rank
 
         """
-        self.send_remove_player(uid)
+        self.send_remove_player(score, uid, username, photo, channel_name, rank)
         return self.recv_remove_player()
 
-    def send_remove_player(self, uid):
+    def send_remove_player(self, score, uid, username, photo, channel_name, rank):
         self._oprot.writeMessageBegin('remove_player', TMessageType.CALL, self._seqid)
         args = remove_player_args()
+        args.score = score
         args.uid = uid
+        args.username = username
+        args.photo = photo
+        args.channel_name = channel_name
+        args.rank = rank
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
@@ -154,7 +172,7 @@ class Processor(Iface, TProcessor):
         iprot.readMessageEnd()
         result = add_player_result()
         try:
-            result.success = self._handler.add_player(args.score, args.uid, args.username, args.photo, args.channel_name)
+            result.success = self._handler.add_player(args.score, args.uid, args.username, args.photo, args.channel_name, args.rank)
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
@@ -177,7 +195,7 @@ class Processor(Iface, TProcessor):
         iprot.readMessageEnd()
         result = remove_player_result()
         try:
-            result.success = self._handler.remove_player(args.uid)
+            result.success = self._handler.remove_player(args.score, args.uid, args.username, args.photo, args.channel_name, args.rank)
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
@@ -205,16 +223,18 @@ class add_player_args(object):
      - username
      - photo
      - channel_name
+     - rank
 
     """
 
 
-    def __init__(self, score=None, uid=None, username=None, photo=None, channel_name=None,):
+    def __init__(self, score=None, uid=None, username=None, photo=None, channel_name=None, rank=None,):
         self.score = score
         self.uid = uid
         self.username = username
         self.photo = photo
         self.channel_name = channel_name
+        self.rank = rank
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -250,6 +270,11 @@ class add_player_args(object):
                     self.channel_name = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.I32:
+                    self.rank = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -280,6 +305,10 @@ class add_player_args(object):
             oprot.writeFieldBegin('channel_name', TType.STRING, 5)
             oprot.writeString(self.channel_name.encode('utf-8') if sys.version_info[0] == 2 else self.channel_name)
             oprot.writeFieldEnd()
+        if self.rank is not None:
+            oprot.writeFieldBegin('rank', TType.I32, 6)
+            oprot.writeI32(self.rank)
+            oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
@@ -304,6 +333,7 @@ add_player_args.thrift_spec = (
     (3, TType.STRING, 'username', 'UTF8', None, ),  # 3
     (4, TType.STRING, 'photo', 'UTF8', None, ),  # 4
     (5, TType.STRING, 'channel_name', 'UTF8', None, ),  # 5
+    (6, TType.I32, 'rank', None, None, ),  # 6
 )
 
 
@@ -371,13 +401,23 @@ add_player_result.thrift_spec = (
 class remove_player_args(object):
     """
     Attributes:
+     - score
      - uid
+     - username
+     - photo
+     - channel_name
+     - rank
 
     """
 
 
-    def __init__(self, uid=None,):
+    def __init__(self, score=None, uid=None, username=None, photo=None, channel_name=None, rank=None,):
+        self.score = score
         self.uid = uid
+        self.username = username
+        self.photo = photo
+        self.channel_name = channel_name
+        self.rank = rank
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -389,8 +429,33 @@ class remove_player_args(object):
             if ftype == TType.STOP:
                 break
             if fid == 1:
+                if ftype == TType.I32:
+                    self.score = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
                 if ftype == TType.STRING:
                     self.uid = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.username = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.STRING:
+                    self.photo = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.STRING:
+                    self.channel_name = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.I32:
+                    self.rank = iprot.readI32()
                 else:
                     iprot.skip(ftype)
             else:
@@ -403,9 +468,29 @@ class remove_player_args(object):
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
         oprot.writeStructBegin('remove_player_args')
+        if self.score is not None:
+            oprot.writeFieldBegin('score', TType.I32, 1)
+            oprot.writeI32(self.score)
+            oprot.writeFieldEnd()
         if self.uid is not None:
-            oprot.writeFieldBegin('uid', TType.STRING, 1)
+            oprot.writeFieldBegin('uid', TType.STRING, 2)
             oprot.writeString(self.uid.encode('utf-8') if sys.version_info[0] == 2 else self.uid)
+            oprot.writeFieldEnd()
+        if self.username is not None:
+            oprot.writeFieldBegin('username', TType.STRING, 3)
+            oprot.writeString(self.username.encode('utf-8') if sys.version_info[0] == 2 else self.username)
+            oprot.writeFieldEnd()
+        if self.photo is not None:
+            oprot.writeFieldBegin('photo', TType.STRING, 4)
+            oprot.writeString(self.photo.encode('utf-8') if sys.version_info[0] == 2 else self.photo)
+            oprot.writeFieldEnd()
+        if self.channel_name is not None:
+            oprot.writeFieldBegin('channel_name', TType.STRING, 5)
+            oprot.writeString(self.channel_name.encode('utf-8') if sys.version_info[0] == 2 else self.channel_name)
+            oprot.writeFieldEnd()
+        if self.rank is not None:
+            oprot.writeFieldBegin('rank', TType.I32, 6)
+            oprot.writeI32(self.rank)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -426,7 +511,12 @@ class remove_player_args(object):
 all_structs.append(remove_player_args)
 remove_player_args.thrift_spec = (
     None,  # 0
-    (1, TType.STRING, 'uid', 'UTF8', None, ),  # 1
+    (1, TType.I32, 'score', None, None, ),  # 1
+    (2, TType.STRING, 'uid', 'UTF8', None, ),  # 2
+    (3, TType.STRING, 'username', 'UTF8', None, ),  # 3
+    (4, TType.STRING, 'photo', 'UTF8', None, ),  # 4
+    (5, TType.STRING, 'channel_name', 'UTF8', None, ),  # 5
+    (6, TType.I32, 'rank', None, None, ),  # 6
 )
 
 

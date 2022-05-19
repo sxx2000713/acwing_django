@@ -71,7 +71,7 @@ class MultiPlayer(AsyncWebsocketConsumer):
         player = await database_sync_to_async(db_get_player)()
     # Connect!
         transport.open()
-        client.add_player(player.score, data['uid'], data['username'], data['photo'], self.channel_name)
+        client.add_player(player.score, data['uid'], data['username'], data['photo'], self.channel_name, player.rank)
 
     # Close!
         transport.close()
@@ -82,8 +82,11 @@ class MultiPlayer(AsyncWebsocketConsumer):
         transport = TTransport.TBufferedTransport(transport)
         protocol = TBinaryProtocol.TBinaryProtocol(transport)
         client = Match.Client(protocol)
+        def db_get_player():
+            return Player.objects.get(user__username=data['username'])
+        player = await database_sync_to_async(db_get_player)()
         transport.open()
-        client.remove_player(data['uid'])
+        client.remove_player(player.score, data['uid'], data['username'], data['photo'], self.channel_name, player.rank)
         transport.close()
 
 

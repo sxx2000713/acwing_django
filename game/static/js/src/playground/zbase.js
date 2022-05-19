@@ -38,7 +38,7 @@ class SSZZGamePlayground {
         this.state = "waiting"; // waiting > fighting > over
 
         this.players = [];
-        this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, "lightgreen", 0.15, "me", this.root.settings.username, this.root.settings.photo));
+        this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, "lightgreen", 0.15, "me", this.root.settings.username, this.root.settings.photo, this.root.settings.rank));
         this.audio = document.createElement("audio");
         this.audio.loop = true;
         this.audio.src = "/static/audio/backgroundmusic.mp3";
@@ -60,8 +60,9 @@ class SSZZGamePlayground {
         this.mps = new MultiPlayerSocket(this);
         this.chatfield = new ChatField(this)
         this.mps.uid = this.players[0].uid;
+        this.mps.firstplayer = this.players[0];
         this.mps.ws.onopen = function () {//链接创建成功回调
-            outer.mps.send_create_player(outer.root.settings.username, outer.root.settings.photo);
+            outer.mps.send_create_player(outer.root.settings.username, outer.root.settings.photo, outer.root.settings.rank);
         };
     }
 

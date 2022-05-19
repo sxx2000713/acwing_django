@@ -3,6 +3,7 @@ class Settings {
         this.root = root;
         this.username = "";
         this.photo = "";
+        this.rank = 1500;
         this.$settings = $(`
         <div class="sszz-game-settings">
             <div class="sszz-game-settings-login">
@@ -184,6 +185,7 @@ class Settings {
 
                     outer.username = resp.username;
                     outer.photo = resp.photo;
+                    outer.rank = resp.rank;
                     outer.hide();
                     outer.root.menu.show();
 

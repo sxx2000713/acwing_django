@@ -1,5 +1,5 @@
 class Player extends SSZZGameObject {
-    constructor(playground, X, Y, radius, color, speed, character, username, photo) {
+    constructor(playground, X, Y, radius, color, speed, character, username, photo, rank) {
         super();
         this.playground = playground;
         this.ctx = this.playground.game_map.ctx;
@@ -21,7 +21,19 @@ class Player extends SSZZGameObject {
         this.fraction = 0.9;
         this.spent_time = 0;
         this.fireballs = [];
-        this.photo = photo;
+        this.rank = rank;
+
+        // this.photo = photo;
+        if (this.rank <= 1500)
+            this.photo = "/static/image/player/2.png";
+        else if (this.rank <= 1700)
+            this.photo = "/static/image/player/4.png";
+        else if (this.rank <= 1900)
+            this.photo = "/static/image/player/5.png";
+        else if (this.rank <= 2100)
+            this.photo = "/static/image/player/1.png";
+        else
+            this.photo = "/static/image/player/3.png";
         if (this.character !== "robot") {
             this.img = new Image();
             this.img.src = this.photo;

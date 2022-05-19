@@ -12,9 +12,6 @@ class SSZZGameMenu {
                     多人模式
                 </div>
                 <br>
-                <div class="sszz-game-menu-buttonfield-item sszz-game-menu-buttonfield-item-setting">
-                    设置
-                </div>
                 <div class="sszz-game-menu-buttonfield-item sszz-game-menu-buttonfield-item-logout">
                     退出
                 </div>
@@ -268,9 +265,9 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
     resize() {
         this.ctx.canvas.width = this.playground.width;
         this.ctx.canvas.height = this.playground.height;
-        this.ctx.drawImage(this.img, 0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
-        // this.ctx.fillStyle = "rgb(0, 0, 0)";
-        // this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+        // this.ctx.drawImage(this.img, 0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
+        this.ctx.fillStyle = "rgb(0, 0, 0)";
+        this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
     }
 
     update() {
@@ -278,13 +275,14 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
     }
 
     render() {
-        this.ctx.drawImage(this.img, 0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
-        // this.ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
-        // this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+        // this.ctx.drawImage(this.img, 0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
+        this.ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+        this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
     }
 }class NoticeBoard {
     constructor(root) {
         this.root = root;
+        this.rankscore = this.root.settings.rank;
         this.$noticeboard = $(`
             <div class="sszz-game-noticeboard">
                 <div class="sszz-game-noticeboard-submit">
@@ -296,6 +294,14 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
                     <div class="sperate">
                         <div class="sszz-game-noticeboard-item button2">
                             <button>返回</button>
+                        </div>
+                    </div>
+                    <div class="sperate">
+                        <div class="sszz-game-noticeboard-title notice_username">
+                        </div>
+                    </div>
+                    <div class="sperate">
+                        <div class="sszz-game-noticeboard-title rank_score">
                         </div>
                     </div>
                 </div>
@@ -338,6 +344,8 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
         this.$start_match = this.$noticeboard.find(".button1 button");
         this.$return_menu = this.$noticeboard.find(".button2 button");
         this.$cancel_match = this.$noticeboard.find(".button3 button");
+        this.$rank_score = this.$noticeboard.find(".rank_score");
+        this.$notice_username = this.$noticeboard.find(".notice_username")
         // this.$confirm = this.$noticeboard.find(".button4 button");
         // this.$cancel = this.$noticeboard.find(".button5 button");
         // this.ctx = this.playground.game_map.ctx;
@@ -366,8 +374,9 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
         })
         this.$cancel_match.click(function () {
             outer.$waiting_board.hide();
-            outer.$match_board.show();
+            outer.root.menu.show();
             outer.cancel_match();
+            location.reload();
         })
         // this.$confirm.click(function () {
         //     outer.start_game();
@@ -390,6 +399,10 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
     show() {
         this.$noticeboard.show();
         this.$match_board.show();
+        let text_rank = "当前rank分：" + this.rankscore + "分";
+        let text_usname = this.root.settings.username;
+        this.$notice_username.html(text_usname);
+        this.$rank_score.html(text_rank)
     }
 
     hide() {
@@ -398,8 +411,9 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
 
     cancel_match() {
         let mps = this.root.playground.mps
+        let player = mps.firstplayer;
+        mps.send_cancel_match(mps.uid, player.username, player.photo, player.rank);
         this.root.playground.hide();
-        mps.send_cancel_match(mps.uid);
     }
 
     start_game() {
@@ -412,11 +426,9 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
         setTimeout(function () {
             outer.root.playground.$playground.show();
         }, 3000);
+        this.$success_board.hide();
     }
 
-    cancel() {
-
-    }
 
 }class Particles extends SSZZGameObject {
     constructor(playground, x, y, radius, vx, vy, color, speed, move_length) {
@@ -460,7 +472,7 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
         this.ctx.fill();
     }
 }class Player extends SSZZGameObject {
-    constructor(playground, X, Y, radius, color, speed, character, username, photo) {
+    constructor(playground, X, Y, radius, color, speed, character, username, photo, rank) {
         super();
         this.playground = playground;
         this.ctx = this.playground.game_map.ctx;
@@ -482,7 +494,19 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
         this.fraction = 0.9;
         this.spent_time = 0;
         this.fireballs = [];
-        this.photo = photo;
+        this.rank = rank;
+
+        // this.photo = photo;
+        if (this.rank <= 1500)
+            this.photo = "/static/image/player/2.png";
+        else if (this.rank <= 1700)
+            this.photo = "/static/image/player/4.png";
+        else if (this.rank <= 1900)
+            this.photo = "/static/image/player/5.png";
+        else if (this.rank <= 2100)
+            this.photo = "/static/image/player/1.png";
+        else
+            this.photo = "/static/image/player/3.png";
         if (this.character !== "robot") {
             this.img = new Image();
             this.img.src = this.photo;
@@ -713,6 +737,8 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
         this.move_length = move_length;
         this.eps = 0.01;
         this.damage = damage;
+        this.img = new Image();
+        this.img.src = "/static/image/player/attack.png";
     }
 
     start() {
@@ -773,10 +799,17 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
 
     render() {
         let scale = this.playground.scale;
+        // this.ctx.beginPath();
+        // this.ctx.arc(this.x * scale, this.y * scale, this.radius * scale, 0, Math.PI * 2, false);
+        // this.ctx.fillStyle = this.color;
+        // this.ctx.fill();
+        this.ctx.save();
         this.ctx.beginPath();
         this.ctx.arc(this.x * scale, this.y * scale, this.radius * scale, 0, Math.PI * 2, false);
-        this.ctx.fillStyle = this.color;
-        this.ctx.fill();
+        this.ctx.stroke();
+        this.ctx.clip();
+        this.ctx.drawImage(this.img, (this.x - this.radius) * scale, (this.y - this.radius) * scale, this.radius * 2 * scale, this.radius * 2 * scale);
+        this.ctx.restore();
     }
 
     on_destroy() {
@@ -799,13 +832,14 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
         this.recive();
     }
 
-    send_create_player(username, photo) {
+    send_create_player(username, photo, rank) {
         let outer = this;
         this.ws.send(JSON.stringify({
             'event': "create player",
             'uid': outer.uid,
             'username': username,
-            'photo': photo
+            'photo': photo,
+            'rank': rank,
         }))
     }
     recive() {
@@ -816,7 +850,7 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
             if (uid === outer.uid) return false;
             let event = data.event;
             if (event === "create player") {
-                outer.recive_create_player(uid, data.username, data.photo);
+                outer.recive_create_player(uid, data.username, data.photo, data.rank);
             } else if (event === "move") {
                 outer.recive_move_to(uid, data.tx, data.ty);
             } else if (event === "attack") {
@@ -831,8 +865,8 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
         }
     }
 
-    recive_create_player(uid, username, photo) {
-        let player = new Player(this.playground, this.playground.width / 2 / this.playground.scale, 0.5, 0.05, "white", 0.15, "enemy", username, photo);
+    recive_create_player(uid, username, photo, rank) {
+        let player = new Player(this.playground, this.playground.width / 2 / this.playground.scale, 0.5, 0.05, "white", 0.15, "enemy", username, photo, rank);
         player.uid = uid;
         this.playground.players.push(player);
     }
@@ -919,10 +953,13 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
         player.playground.chatfield.show_history();
     }
 
-    send_cancel_match(uid) {
+    send_cancel_match(uid, username, photo, rank) {
         this.ws.send(JSON.stringify({
             'event': "cancel match",
             'uid': uid,
+            'username': username,
+            'photo': photo,
+            'rank': rank,
         }))
     }
 }class SSZZGamePlayground {
@@ -965,7 +1002,7 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
         this.state = "waiting"; // waiting > fighting > over
 
         this.players = [];
-        this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, "lightgreen", 0.15, "me", this.root.settings.username, this.root.settings.photo));
+        this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, "lightgreen", 0.15, "me", this.root.settings.username, this.root.settings.photo, this.root.settings.rank));
         this.audio = document.createElement("audio");
         this.audio.loop = true;
         this.audio.src = "/static/audio/backgroundmusic.mp3";
@@ -987,8 +1024,9 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
         this.mps = new MultiPlayerSocket(this);
         this.chatfield = new ChatField(this)
         this.mps.uid = this.players[0].uid;
+        this.mps.firstplayer = this.players[0];
         this.mps.ws.onopen = function () {//链接创建成功回调
-            outer.mps.send_create_player(outer.root.settings.username, outer.root.settings.photo);
+            outer.mps.send_create_player(outer.root.settings.username, outer.root.settings.photo, outer.root.settings.rank);
         };
     }
 
@@ -1031,6 +1069,7 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
         this.root = root;
         this.username = "";
         this.photo = "";
+        this.rank = 1500;
         this.$settings = $(`
         <div class="sszz-game-settings">
             <div class="sszz-game-settings-login">
@@ -1212,6 +1251,7 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
 
                     outer.username = resp.username;
                     outer.photo = resp.photo;
+                    outer.rank = resp.rank;
                     outer.hide();
                     outer.root.menu.show();
 

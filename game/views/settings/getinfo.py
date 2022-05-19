@@ -14,4 +14,5 @@ def getinfo(request):
             'result':"success",
             'username': player.user.username,
             'photo':player.photo,
+            'rank':player.rank,
         })
