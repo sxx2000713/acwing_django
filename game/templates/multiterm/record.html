@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        body {
+            margin: 1rem auto;
+            width: 90%;
+            max-width: 768px;
+        }
+    </style>
+</head>
+
+<body>
+    <table>
+        <caption>
+            战绩表
+        </caption>
+        <thead>
+            <tr>
+                <th>用户名</th>
+                <th>时间</th>
+                <th>概率</th>
+                <th>score_change</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for i in record_list %}
+            <tr>
+                <td>{{i.user.user.username}}</td>
+                <td>{{i.created_time}}</td>
+                <td>{{i.win_probability}}</td>
+                <td>{{i.score_change}}</td>
+            </tr>
+            {% endfor%}
+            <tr>
+                <td>Bob</td>
+                <td>99</td>
+                <td>98</td>
+                <td>97</td>
+            </tr>
+            <tr>
+                <td>Tom</td>
+                <td>98</td>
+                <td>97</td>
+                <td>96</td>
+            </tr>
+        </tbody>
+
+    </table>
+
+</body>
+
+</html>

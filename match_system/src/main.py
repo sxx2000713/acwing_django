@@ -22,7 +22,7 @@ from asgiref.sync import async_to_sync
 from django.core.cache import cache
 
 queue = Queue()
-
+queue_state = {}
 class Player:
     def __init__(self, score, uid, username, photo, channel_name):
         self.score = score
@@ -41,8 +41,8 @@ class Pool:
         self.players.append(player)
     #匹配策略：
     def check_match(self, a, b):
-        # if a.username == b.username:
-        #     return False
+        if a.username == b.username:
+            return False
         dt = abs(a.score - b.score)
         a_max_dif = a.waiting_time * 50
         b_max_dif = b.waiting_time * 50
@@ -69,21 +69,40 @@ class Pool:
                     'type':"group_send_event",
                     'event':'create player',
                     'uid':p.uid,
-                    'username':p.username
+                    'photo':p.photo,
+                    'username':p.username,
                 }
             )
+        async_to_sync(channel_layer.group_send)(
+            room_name,
+            {
+                'type':"group_send_event",
+                'event':'match success',
+            }
+        )
 
     #总匹配
     def match(self):
         while len(self.players) >= 3:
             self.players = sorted(self.players, key=lambda p:p.score)
             flag = False
+            for i in range(len(self.players)):
+                try:
+                    uid = self.players[i].uid
+                except:
+                    break
+                if queue_state[uid] == 0:
+                    self.players = self.players[:i] + self.players[i+1:]
+                    i -= 1
             for i in range(len(self.players) - 2):
                 a, b, c = self.players[i], self.players[i + 1], self.players[i + 2]
                 if self.check_match(a, b) and self.check_match(b, c) and self.check_match(a, c):
                     flag = True
                     self.match_success([a, b, c])
                     self.players = self.players[:i] + self.players[i+3:]
+                    queue_state.pop(a.uid)
+                    queue_state.pop(b.uid)
+                    queue_state.pop(c.uid)
                     break
             if not flag:
                 #当前时间容忍度下未匹配成功，跳出等待容忍度上升
@@ -98,7 +117,7 @@ def worker():
     pool = Pool()
     while TRUE:
         player = get_player_from_queue()
-        if player:
+        if player and queue_state[player.uid] == 1:
             pool.add_player(player)
         else:
             pool.match()
@@ -114,8 +133,11 @@ class MatchHandler:
     def add_player(self, score, uid, username, photo, channel_name):
         player = Player(score, uid, username, photo, channel_name)
         queue.put(player)
+        queue_state[uid] = 1
         return 0
-
+    def remove_player(self, uid):
+        queue_state[uid] = 0
+        return 0
 
 if __name__ == '__main__':
     handler = MatchHandler()

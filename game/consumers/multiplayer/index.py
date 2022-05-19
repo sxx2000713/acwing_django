@@ -1,3 +1,4 @@
+import math
 from channels.generic.websocket import AsyncWebsocketConsumer
 import json
 from django.conf import settings
@@ -9,7 +10,7 @@ from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 
 from match_system.src.match_server.match_services import Match
-from game.models.player.player import Player
+from game.models.player.player import Player, Record
 from channels.db import database_sync_to_async
 
 class MultiPlayer(AsyncWebsocketConsumer):
@@ -59,26 +60,32 @@ class MultiPlayer(AsyncWebsocketConsumer):
         self.room_name = None
         self.uid = data['uid']
         transport = TSocket.TSocket('127.0.0.1', 9090)
-
     # Buffering is critical. Raw sockets are very slow
         transport = TTransport.TBufferedTransport(transport)
-
     # Wrap in a protocol
         protocol = TBinaryProtocol.TBinaryProtocol(transport)
-
     # Create a client to use the protocol encoder
         client = Match.Client(protocol)
-
         def db_get_player():
             return Player.objects.get(user__username=data['username'])
         player = await database_sync_to_async(db_get_player)()
-
     # Connect!
         transport.open()
         client.add_player(player.score, data['uid'], data['username'], data['photo'], self.channel_name)
 
     # Close!
         transport.close()
+    
+    async def cancel_match(self, data):
+        self.uid = data['uid']
+        transport = TSocket.TSocket('127.0.0.1', 9090)
+        transport = TTransport.TBufferedTransport(transport)
+        protocol = TBinaryProtocol.TBinaryProtocol(transport)
+        client = Match.Client(protocol)
+        transport.open()
+        client.remove_player(data['uid'])
+        transport.close()
+
 
     
     async def group_send_event(self, data):
@@ -127,15 +134,62 @@ class MultiPlayer(AsyncWebsocketConsumer):
             if player['hp'] > 0:
                 remain_cnt += 1
         if remain_cnt <= 1:
+            def update_record(username, result, score):
+                mean_enemy_score = 0
+                other_cnt = 0
+                player = Player.objects.get(user__username=username)
+                for p in players:
+                    if p['username'] != username:
+                        pl = Player.objects.get(user__username=p['username'])
+                        mean_enemy_score += pl.score
+                        other_cnt += 1
+                mean_enemy_score /= other_cnt
+                score_difference = player.score - mean_enemy_score
+                win_probablity = 1 / (1 + math.pow(10, - (score_difference / 400)))
+                Record.objects.create(user = player, game_result = result, win_probability = win_probablity, score_change = score)
+            def conculate_change(username):
+                player = Player.objects.get(user__username=username)
+                record_list = Record.objects.filter(user = player).order_by("created_time")
+                cnt = 0
+                sum_win_p = 0.0
+                sum_win = 0
+                score = 0
+                k = 0
+                if player.score <= 1500:
+                    k = 20
+                elif player.score <= 2100:
+                    k = 10
+                else:
+                    k = 5
+                for obj in record_list:
+                    cnt += 1
+                    sum_win_p = float(obj.win_probability) + sum_win_p
+                    sum_win += obj.game_result
+                    if cnt >= 5 :
+                        break
+                score = k * (sum_win - sum_win_p)
+                return score
             def db_update_player_score(username, score):
                 player = Player.objects.get(user__username=username)
+                record_list = Record.objects.filter(user = player).order_by("-created_time")
+                record = record_list.first()
+                record.score_change = score
+                record.save()
                 player.score += score
+                player.save()
+            def db_update_player_rank(username, score):
+                player = Player.objects.get(user__username=username)
+                player.rank += score
                 player.save()
             for player in players:
                 if player['hp'] <= 0 :
-                    await database_sync_to_async(db_update_player_score)(player['username'], -5)
+                    await database_sync_to_async(update_record)(player['username'], 0, 0)
+                    database_sync_to_async(db_update_player_rank)(player['username'], -5)
                 else:
-                    await database_sync_to_async(db_update_player_score)(player['username'], 10)
+                    await database_sync_to_async(update_record)(player['username'], 1, 0)
+                    database_sync_to_async(db_update_player_rank)(player['username'], 10)
+                score = await database_sync_to_async(conculate_change)(player['username'])
+                await database_sync_to_async(db_update_player_score)(player['username'], score)
         else:
             if self.room_name:
                 cache.set(self.room_name, players, 3600)
@@ -165,6 +219,7 @@ class MultiPlayer(AsyncWebsocketConsumer):
             }
         )
 
+
     async def receive(self, text_data):
         data = json.loads(text_data)
         event = data['event']
@@ -178,3 +233,5 @@ class MultiPlayer(AsyncWebsocketConsumer):
             await self.enemy_attacked(data)
         elif event == "send message":
             await self.message(data)
+        elif event == "cancel match":
+            await self.cancel_match(data)

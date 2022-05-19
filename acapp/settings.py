@@ -141,6 +141,9 @@ CACHES = {
 }
 USER_AGENTS_CACHE = 'default'
 
+X_FRAME_OPTIONS = 'SAMEORIGIN'
+
+
 ASGI_APPLICATION = 'acapp.asgi.application'
 CHANNEL_LAYERS = {
     "default": {

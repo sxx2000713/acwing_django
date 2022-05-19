@@ -21,6 +21,7 @@ class EndBoard extends SSZZGameObject {
         $canvas.click(function () {
             outer.playground.hide();
             outer.playground.root.menu.show();
+            outer.playground.audio.pause();
         })
     }
 

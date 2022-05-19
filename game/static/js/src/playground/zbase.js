@@ -3,10 +3,9 @@ class SSZZGamePlayground {
         this.root = root;
         this.$playground = $(`
         <div class="sszz-game-playground">
-        </div>`);
+        </div> `);
         this.hide();
         this.root.$sszz_game.append(this.$playground);
-
         this.start();
     }
 
@@ -33,7 +32,6 @@ class SSZZGamePlayground {
         this.width = this.$playground.width();
         this.height = this.$playground.height();
         this.game_map = new GameMap(this);
-        this.notice_board = new NoticeBoard(this);
         this.endboard = new EndBoard(this);
         this.player_cnt = 0;
         this.resize();
@@ -41,21 +39,32 @@ class SSZZGamePlayground {
 
         this.players = [];
         this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, "lightgreen", 0.15, "me", this.root.settings.username, this.root.settings.photo));
+        this.audio = document.createElement("audio");
+        this.audio.loop = true;
+        this.audio.src = "/static/audio/backgroundmusic.mp3";
+        this.audio.play();
         if (mode === "single") {
             for (let i = 0; i < 5; i++) {
                 this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, "lightblue", 0.15, "robot"));
             }
         } else if (mode === "multiend") {
-            this.mps = new MultiPlayerSocket(this);
-            this.chatfield = new ChatField(this);
-
-            this.mps.uid = this.players[0].uid;
-            this.mps.ws.onopen = function () {//链接创建成功回调
-                outer.mps.send_create_player(outer.root.settings.username, outer.root.settings.photo);
-            };
+            this.$playground.hide();
+            this.root.menu.hide();
+            this.root.noticeboard.show();
         }
 
     }
+
+    create_wsconnect() {
+        let outer = this;
+        this.mps = new MultiPlayerSocket(this);
+        this.chatfield = new ChatField(this)
+        this.mps.uid = this.players[0].uid;
+        this.mps.ws.onopen = function () {//链接创建成功回调
+            outer.mps.send_create_player(outer.root.settings.username, outer.root.settings.photo);
+        };
+    }
+
     hide() {
         while (this.players && this.players.length > 0) {
             this.players[0].destory();
@@ -65,10 +74,10 @@ class SSZZGamePlayground {
             this.game_map = null;
         }
 
-        if (this.notice_board) {
-            this.notice_board.destory();
-            this.notice_board = null;
-        }
+        // if (this.notice_board) {
+        //     this.notice_board.destory();
+        //     this.notice_board = null;
+        // }
 
         if (this.endboard) {
             this.endboard.destory();

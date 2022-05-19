@@ -31,10 +31,10 @@ class Player extends SSZZGameObject {
     start() {
         let scale = this.playground.scale;
         this.playground.player_cnt++;
-        this.playground.notice_board.write("已就绪：" + this.playground.player_cnt + "人");
+        // this.playground.notice_board.write("已就绪：" + this.playground.player_cnt + "人");
         if (this.playground.player_cnt >= 3) {
             this.playground.state = "fighting";
-            this.playground.notice_board.write("Fighting");
+            // this.playground.notice_board.write("Fighting");
         }
         if (this.character === "me") {
             this.add_listening_events();
@@ -108,7 +108,6 @@ class Player extends SSZZGameObject {
             let fireball = this.fireballs[i];
             if (fireball.uid === ball_uid) {
                 fireball.destory();
-                console.log();
                 break;
             }
         }
@@ -208,7 +207,7 @@ class Player extends SSZZGameObject {
 
     render() {
         let scale = this.playground.scale;
-        if (this.character === "me") {
+        if (this.character !== "robot") {
             this.ctx.save();
             this.ctx.beginPath();
             this.ctx.arc(this.x * scale, this.y * scale, this.radius * scale, 0, Math.PI * 2, false);

@@ -7,6 +7,8 @@ class GameMap extends SSZZGameObject {
         this.ctx.canvas.width = this.playground.width;
         this.ctx.canvas.height = this.playground.height;
         this.playground.$playground.append(this.$canvas);
+        this.img = new Image();
+        this.img.src = "/static/image/playground/background.jpg"
     }
     start() {
         this.$canvas.focus();
@@ -15,8 +17,9 @@ class GameMap extends SSZZGameObject {
     resize() {
         this.ctx.canvas.width = this.playground.width;
         this.ctx.canvas.height = this.playground.height;
-        this.ctx.fillStyle = "rgb(0, 0, 0)";
-        this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+        this.ctx.drawImage(this.img, 0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
+        // this.ctx.fillStyle = "rgb(0, 0, 0)";
+        // this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
     }
 
     update() {
@@ -24,7 +27,8 @@ class GameMap extends SSZZGameObject {
     }
 
     render() {
-        this.ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
-        this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+        this.ctx.drawImage(this.img, 0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
+        // this.ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+        // this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
     }
 }

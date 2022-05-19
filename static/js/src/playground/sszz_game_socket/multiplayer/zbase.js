@@ -26,7 +26,7 @@ class MultiPlayerSocket {
             if (uid === outer.uid) return false;
             let event = data.event;
             if (event === "create player") {
-                outer.recive_create_player(uid, data.username);
+                outer.recive_create_player(uid, data.username, data.photo);
             } else if (event === "move") {
                 outer.recive_move_to(uid, data.tx, data.ty);
             } else if (event === "attack") {
@@ -35,12 +35,14 @@ class MultiPlayerSocket {
                 outer.recive_enemy_is_attacked(uid, data.enemy_uid, data.enemy_x, data.enemy_y, data.angle, data.damage, data.ball_uid);
             } else if (event === "send message") {
                 outer.recive_message(uid, data.text);
+            } else if (event === "match success") {
+                outer.playground.root.noticeboard.start_game();
             }
         }
     }
 
-    recive_create_player(uid, username) {
-        let player = new Player(this.playground, this.playground.width / 2 / this.playground.scale, 0.5, 0.05, "white", 0.15, "enemy", username);
+    recive_create_player(uid, username, photo) {
+        let player = new Player(this.playground, this.playground.width / 2 / this.playground.scale, 0.5, 0.05, "white", 0.15, "enemy", username, photo);
         player.uid = uid;
         this.playground.players.push(player);
     }
@@ -125,5 +127,12 @@ class MultiPlayerSocket {
         let player = this.get_player(uid);
         player.playground.chatfield.add_message(player.username, text);
         player.playground.chatfield.show_history();
+    }
+
+    send_cancel_match(uid) {
+        this.ws.send(JSON.stringify({
+            'event': "cancel match",
+            'uid': uid,
+        }))
     }
 }

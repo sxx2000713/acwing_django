@@ -5,7 +5,7 @@ export class SSZZGame {
         this.menu = new SSZZGameMenu(this);
         this.settings = new Settings(this);
         this.playground = new SSZZGamePlayground(this);
-
+        this.noticeboard = new NoticeBoard(this);
         this.start();
     }
 
