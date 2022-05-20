@@ -265,9 +265,9 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
     resize() {
         this.ctx.canvas.width = this.playground.width;
         this.ctx.canvas.height = this.playground.height;
-        // this.ctx.drawImage(this.img, 0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
-        this.ctx.fillStyle = "rgb(0, 0, 0)";
-        this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+        this.ctx.drawImage(this.img, 0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
+        // this.ctx.fillStyle = "rgb(0, 0, 0)";
+        // this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
     }
 
     update() {
@@ -275,9 +275,9 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
     }
 
     render() {
-        // this.ctx.drawImage(this.img, 0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
-        this.ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
-        this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+        this.ctx.drawImage(this.img, 0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
+        // this.ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+        // this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
     }
 }class NoticeBoard {
     constructor(root) {
