@@ -116,13 +116,14 @@ def worker():
     while TRUE:
         player = get_player_from_queue()
         if not player:
-            sleep(1)   
+            pool.match()
+            sleep(1)
         else:
             if queue_state[player.username] == 1:
                 pool.add_player(player)
             elif queue_state[player.username] == 0:
                 pool.remove_player(player)
-            pool.match()
+            pool.match()  
 
 def get_player_from_queue():
     try:

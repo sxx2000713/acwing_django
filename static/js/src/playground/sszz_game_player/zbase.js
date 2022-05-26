@@ -93,7 +93,7 @@ class Player extends SSZZGameObject {
                 outer.playground.chatfield.hide_input();
             }
             if (outer.playground.state !== "fighting") return true;
-            if (e.which === 81) {
+            if (e.which === 65) {
                 outer.cur_skill = "fireball";
                 return false;
             }
@@ -140,7 +140,7 @@ class Player extends SSZZGameObject {
             let color = this.color;
             let speed = this.speed * 10;
             let move_length = this.radius * Math.random() * 10;
-            new Particles(this.playground, x, y, radius, vx, vy, color, speed, move_length);
+            // new Particles(this.playground, x, y, radius, vx, vy, color, speed, move_length);
         }
         this.radius -= damage;
         if (this.radius < this.eps) {
@@ -149,7 +149,7 @@ class Player extends SSZZGameObject {
         } else {
             this.damagex = Math.cos(angle);
             this.damagey = Math.sin(angle);
-            this.damage_speed = damage * 100;
+            // this.damage_speed = damage * 100;
             this.speed *= 1.1;
         }
     }

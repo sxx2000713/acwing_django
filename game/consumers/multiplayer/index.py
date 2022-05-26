@@ -3,6 +3,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 import json
 from django.conf import settings
 from django.core.cache import cache
+from django.db.models import *
 
 from thrift import Thrift
 from thrift.transport import TSocket
@@ -153,24 +154,21 @@ class MultiPlayer(AsyncWebsocketConsumer):
             def conculate_change(username):
                 player = Player.objects.get(user__username=username)
                 record_list = Record.objects.filter(user = player).order_by("created_time")
-                cnt = 0
-                sum_win_p = 0.0
-                sum_win = 0
+                win_p = 0.0
+                win = 0
                 score = 0
                 k = 0
-                if player.score <= 1500:
+                last_record = record_list.first()
+                cnt1 = record_list.aggregate(cnt = Count("game_result"))
+                if cnt1['cnt'] <= 10:
                     k = 20
-                elif player.score <= 2100:
+                elif cnt1['cnt'] <= 100:
                     k = 10
                 else:
                     k = 5
-                for obj in record_list:
-                    cnt += 1
-                    sum_win_p = float(obj.win_probability) + sum_win_p
-                    sum_win += obj.game_result
-                    if cnt >= 5 :
-                        break
-                score = k * (sum_win - sum_win_p)
+                win_p = float(last_record.win_probability)
+                win = last_record.game_result
+                score = k * (win - win_p)
                 return score
             def db_update_player_score(username, score):
                 player = Player.objects.get(user__username=username)
@@ -187,10 +185,10 @@ class MultiPlayer(AsyncWebsocketConsumer):
             for player in players:
                 if player['hp'] <= 0 :
                     await database_sync_to_async(update_record)(player['username'], 0, 0)
-                    database_sync_to_async(db_update_player_rank)(player['username'], -5)
+                    await database_sync_to_async(db_update_player_rank)(player['username'], -5)
                 else:
                     await database_sync_to_async(update_record)(player['username'], 1, 0)
-                    database_sync_to_async(db_update_player_rank)(player['username'], 10)
+                    await database_sync_to_async(db_update_player_rank)(player['username'], 10)
                 score = await database_sync_to_async(conculate_change)(player['username'])
                 await database_sync_to_async(db_update_player_score)(player['username'], score)
         else:

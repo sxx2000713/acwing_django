@@ -87,9 +87,10 @@ class NoticeBoard {
             outer.root.playground.create_wsconnect();
         })
         this.$return_menu.click(function () {
-            outer.hide();
-            outer.root.playground.audio.pause();
-            outer.root.menu.show();
+            // outer.hide();
+            // outer.root.playground.audio.pause();
+            // outer.root.menu.show();
+            location.reload();
         })
         this.$cancel_match.click(function () {
             outer.$waiting_board.hide();
@@ -139,13 +140,10 @@ class NoticeBoard {
         let outer = this;
         this.$waiting_board.hide();
         this.$success_board.show();
-        var audio = document.createElement("audio");
-        audio.src = "/static/audio/match_success.mp3";
-        audio.play();
         setTimeout(function () {
             outer.root.playground.$playground.show();
+            outer.$noticeboard.hide();
         }, 3000);
-        this.$success_board.hide();
     }
 
 

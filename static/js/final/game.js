@@ -214,6 +214,7 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
         $canvas.click(function () {
             outer.playground.hide();
             outer.playground.root.menu.show();
+            outer.playground.root.noticeboard.hide();
             outer.playground.audio.pause();
         })
     }
@@ -368,9 +369,10 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
             outer.root.playground.create_wsconnect();
         })
         this.$return_menu.click(function () {
-            outer.hide();
-            outer.root.playground.audio.pause();
-            outer.root.menu.show();
+            // outer.hide();
+            // outer.root.playground.audio.pause();
+            // outer.root.menu.show();
+            location.reload();
         })
         this.$cancel_match.click(function () {
             outer.$waiting_board.hide();
@@ -420,13 +422,10 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
         let outer = this;
         this.$waiting_board.hide();
         this.$success_board.show();
-        var audio = document.createElement("audio");
-        audio.src = "/static/audio/match_success.mp3";
-        audio.play();
         setTimeout(function () {
             outer.root.playground.$playground.show();
+            outer.$noticeboard.hide();
         }, 3000);
-        this.$success_board.hide();
     }
 
 
@@ -566,7 +565,7 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
                 outer.playground.chatfield.hide_input();
             }
             if (outer.playground.state !== "fighting") return true;
-            if (e.which === 81) {
+            if (e.which === 65) {
                 outer.cur_skill = "fireball";
                 return false;
             }
@@ -613,7 +612,7 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
             let color = this.color;
             let speed = this.speed * 10;
             let move_length = this.radius * Math.random() * 10;
-            new Particles(this.playground, x, y, radius, vx, vy, color, speed, move_length);
+            // new Particles(this.playground, x, y, radius, vx, vy, color, speed, move_length);
         }
         this.radius -= damage;
         if (this.radius < this.eps) {
@@ -622,7 +621,7 @@ requestAnimationFrame(SSZZ_GAME_ANIMATION);class ChatField {
         } else {
             this.damagex = Math.cos(angle);
             this.damagey = Math.sin(angle);
-            this.damage_speed = damage * 100;
+            // this.damage_speed = damage * 100;
             this.speed *= 1.1;
         }
     }
